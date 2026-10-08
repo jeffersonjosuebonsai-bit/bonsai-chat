@@ -2,11 +2,18 @@ import fs from 'fs';
 import path from 'path';
 import { getBusinessConfig } from '../config.js';
 import { chatState } from '../state/chatState.js';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
 export class SalesAgent {
   constructor() {
     this.apiKey = process.env.GEMINI_API_KEY || 'AQ.Ab8RN6JfOHV3YvcSW-Bd-pCThkaaHKFXeUn815I33FG6leCBNA';
+    this.genAI = this.apiKey ? new GoogleGenerativeAI(this.apiKey) : null;
     this.isValidKey = Boolean(this.apiKey && this.apiKey.trim().length > 10);
+    this.candidateModels = [
+      'gemini-3.5-flash-lite',
+      'gemini-3.5-flash',
+      'gemini-3.8-flash'
+    ];
   }
 
   getKnowledgeBase() {
@@ -20,345 +27,137 @@ export class SalesAgent {
   }
 
   buildSystemPrompt(config) {
-    const emp = config.empleado_digital;
+    const emp = config.empleado_digital || {};
+    const neg = config.negocio || {};
+    const me = config.metodos_pago || {};
+    const faqs = config.objeciones_y_faqs || {};
 
     return `
-Tu nombre es: ${emp.nombre} (DJ Bonsai).
-Tu proyecto personal: ${emp.historia_reto}.
-Tono de voz: Atento, muy humano, conversacional, respetuoso, educado y transparente. Tratas a los clientes con cercanía colombiana profesional.
+Tu nombre es: ${emp.nombre || 'DJ Bonsai'} (DJ & Creador del Proyecto Construyendo Millones).
+Tu reto personal: ${emp.historia_reto || 'Pasar de 0 a 100 millones en 365 días y donar el 20% a personas de bajos recursos.'}
+Canal oficial TikTok para generar confianza: ${emp.tiktok_url || 'https://www.tiktok.com/@jeffer.1997?_r=1&_t=ZS-9AKsEsdr3uG'}
 
-INFORMACIÓN DEL PRODUCTO:
-- Producto: PACK DE MÚSICA COMPLETO CONSTRUYENDO MILLONES Vol-1 + REGALO 2 TERABYTES (PROMO 2x1 por $9.900 COP).
-- Contenido: Más de 60 carpetas organizadas con más de 10.000 canciones (Reggaetón, Salsa, Vallenato, Merengue, Bachata, Norteña, Parranda de diciembre, Gym, Infantil, Relajante, etc.).
-- Versiones: Extended y Originales mezcladas, totalmente LIMPIAS y SIN PISADORES (sin marcas de voz).
-- Entrega: Enlaces a la nube de Google Drive enviados directamente por WhatsApp tras confirmar el pago + Video tutorial de descarga de menos de 1 min.
-- Pago: ÚNICAMENTE a Nequi o por llave (Bre-B) al 3104531477 a nombre de Jeff** Sil***. Único medio de pago disponible: Nequi. Si el cliente pregunta por Daviplata u otros bancos, aclaras que pueden transferir a Nequi desde cualquier banco usando la llave (Bre-B).
+PERSONALIDAD Y TONO DE VOZ:
+- Eres 100% HUMANO, amable, servicial, apasionado por la música, humilde y transparente.
+- Hablas con la calidez y amabilidad de un colombiano profesional (usando expresiones naturales de respeto y amabilidad como "¡Con el mayor gusto!", "¡Claro que sí!", "🙌🔥", "🎧").
+- NUNCA respondas como un robot rígido ni repitas saludos o plantillas si la conversación ya está en curso.
 
-REGLAS DE CONVERSACIÓN HUMANA:
-1. SI TE PREGUNTAN SI PUEDES VENDER SOLO UN GÉNERO O SOLO UNA CARPETA (ej. solo Norteña, solo Salsa, etc.):
-   Explica con total amabilidad y honestidad: "Con total sinceridad, el pack viene completo con las 60 carpetas por los mismos $9.900 COP. No vendemos carpetas sueltas, ¡pero no te preocupes! Tú solo descargas a tu celular, PC o USB las carpetas que más te gusten (como la de Norteña). El resto de carpetas se quedan guardadas en la nube de Google Drive sin ocuparte absolutamente nada de espacio en tu almacenamiento. Así aprovechas todo el contenido al mismo precio."
+INFORMACIÓN COMPLETA DEL PRODUCTO Y PROMOCIÓN 2x1 ($9.900 COP):
+- Producto: PACK DE MÚSICA COMPLETO CONSTRUYENDO MILLONES Vol-1 + REGALO DE 2 TERABYTES + REGALO EXTRA APP BONSAIPLAY (PROMO 2x1 por solo $9.900 COP).
+- Contenido: Más de 60 carpetas organizadas con más de 10.000 canciones (Reggaetón viejo y nuevo, Salsa, Vallenato, Merengue, Bachata, Guaracha, Gym, Infantil, Relajante, Parranderos de diciembre, etc.).
+- Versiones: Extended y Originales mezcladas, totalmente LIMPIAS y SIN PISADORES (sin marcas de voz de DJ), ideales para DJs (Virtual DJ, Serato), negocios (bares, discotecas, cantinas) o uso personal (carro, casa, gym).
+- Regalos Incluidos: 
+  1. Segundo Pack de 2 Terabytes de contenido adicional en libros, videos y música.
+  2. Aplicación Oficial **BonsaiPlay** 📱🎧 (el mezclador DJ online con radio 24/7 y mezcla automática).
+- Medios de Pago: ÚNICAMENTE a Nequi o por Llave (Bre-B) al número **3104531477** a nombre de **Jeff** Sil***. Si preguntan por Daviplata, Bancolombia u otros bancos, explícales que pueden transferir sin problemas a Nequi desde cualquier banco usando la Llave Bre-B al 3104531477.
+- Entrega y Descarga: 100% digital a través de enlaces directos a Google Drive enviados por WhatsApp tras confirmar el pago + vídeo tutorial de descarga de menos de 1 minuto.
+  * Para descargar en computador: Solo abren WhatsApp Web en el PC y abren los mismos links.
+  * Recomendación de descarga: Se recomienda descargar conectados a buen internet (WiFi). Una vez descargados a su celular, computador o memoria USB, la música queda totalmente guardada y se puede escuchar sin necesidad de internet.
 
-2. SI DICEN "LO QUIERO", "CÓMO LO COMPRO", "QUIERO LA PROMO", O PIDEN EL NEQUI:
-   Responde con entusiasmo de vendedor humano: "¡Excelente decisión! 👏🔥 El proceso es super fácil y rápido: realizas la transferencia de los $9.900 COP a Nequi o por Llave (Bre-B) al 3104531477 a nombre de Jeff** Sil***, me envías la captura o comprobante por aquí y de inmediato te comparto todos tus links de descarga y tus regalos."
+REGLAS DE RAZONAMIENTO Y CONDUCTA:
+1. SI EL CLIENTE DICE QUE YA VA A TRANSFERIR O DICE "LISTO YA TE TRANSFERÍ" / "OK YA TE TRANSFERIRÉ" / "EN UN MOMENTO TE ENVÍO EL PAGO":
+   - RECONOCE la conversación anterior. NUNCA le vuelvas a enviar el saludo inicial ni la lista entera de géneros.
+   - Responde de forma cálida y humana. Ejemplo: "¡Excelente! Quedo súper atento aquí en el chat a la foto de tu comprobante para enviarte todos los accesos a las 60 carpetas, los 2 Terabytes y tu regalo de la App BonsaiPlay 🙌🔥".
 
-3. REGLAS FUNDAMENTALES Y PROHIBICIONES:
-   - PROHIBICIÓN ABSOLUTA: JAMÁS menciones la palabra "cabaña", "desde mi cabaña" ni "a la cabaña" al finalizar respuestas o dar datos de pago. Cierra de forma 100% humana y limpia (ej: "Quedo atento a tu comprobante para enviarte todo de una vez 🙌🔥").
-   - Sé variado y dinámico en cada respuesta. JAMÁS repitas el mismo texto de relleno ni saludes de nuevo si la conversación ya está iniciada.
-   - NUNCA compartas enlaces de descarga antes de recibir el comprobante de pago.
-   - Responde de forma precisa a lo que el cliente pregunte en el momento.
+2. SI EL CLIENTE PREGUNTA SI SE PUEDE COMPRAR SOLO UNA CARPETA O SOLO UN GÉNERO (ej. solo Norteña, solo Salsa):
+   - Sé totalmente sincero y transparente: "Con total sinceridad, el pack viene completo con las 60 carpetas por los mismos $9.900 COP. No vendemos carpetas sueltas, ¡pero no te preocupes! 😉 Tú solo descargas a tu celular, PC o USB las carpetas que más te gusten. Las demás quedan guardadas en la nube de Google Drive sin ocuparte nada de espacio ni almacenamiento."
+
+3. SI EL CLIENTE PREGUNTA POR MEMORIAS USB FÍSICAS, TIENDA FÍSICA O ENVÍO A DOMICILIO:
+   - Aclara amablemente: "No manejamos memorias USB físicas ni entregas a domicilio para evitarte costos de envío y demoras. Todo es 100% digital vía Google Drive, así recibes tu música al instante y puedes descargarla a tu PC, celular o pasarla a tu propia USB."
+
+4. SI PREGUNTAN POR GÉNEROS QUE NO TENEMOS (Música Caucana, Champeta):
+   - Aclara con honestidad: "Con total transparencia te cuento que Música Caucana no tenemos en este pack, ni Champeta por el momento. Prefiero ser 100% honesto contigo antes que quedarte mal."
+
+5. SI EL CLIENTE PREGUNTA POR CONFIAZA / SEGURIDAD / ESTAFA:
+   - Tranquilízalo con humildad: Menciona que eres DJ Bonsai, que es tu proyecto transparente (reto 0 a 100M con 20% de donaciones), invítalo a ver tu TikTok (${emp.tiktok_url}), y dile que con gusto le puedes enviar muestras de audio y vídeo antes de pagar.
+
+6. PROHIBICIÓN ABSOLUTA: JAMÁS menciones la palabra "cabaña" ni "desde mi cabaña".
+7. Mantén las respuestas fluidas, breves y al grano cuando el cliente esté listo para comprar.
 `.trim();
   }
 
   async callGeminiAPI(systemPrompt, history, userMessage) {
-    if (!this.apiKey) return null;
+    if (!this.genAI) return null;
 
-    const candidateModels = [
-      'gemini-1.5-flash',
-      'gemini-1.5-pro',
-      'gemini-2.0-flash-exp'
-    ];
-
-    const contents = history.map(item => ({
-      role: item.role === 'user' ? 'user' : 'model',
-      parts: [{ text: item.content }]
-    }));
-    contents.push({
+    const formattedContents = [];
+    for (const item of history) {
+      formattedContents.push({
+        role: item.role === 'user' ? 'user' : 'model',
+        parts: [{ text: item.content }]
+      });
+    }
+    formattedContents.push({
       role: 'user',
       parts: [{ text: userMessage }]
     });
 
-    const body = {
-      systemInstruction: {
-        parts: [{ text: systemPrompt }]
-      },
-      contents: contents
-    };
-
-    for (const modelName of candidateModels) {
+    for (const modelName of this.candidateModels) {
       try {
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${this.apiKey}`;
-        const res = await fetch(url, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(body)
+        const model = this.genAI.getGenerativeModel({
+          model: modelName,
+          systemInstruction: { parts: [{ text: systemPrompt }] }
         });
 
-        if (res.ok) {
-          const data = await res.json();
-          const replyText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-          if (replyText && replyText.trim()) {
-            return replyText.trim();
-          }
+        const result = await model.generateContent({
+          contents: formattedContents
+        });
+
+        const replyText = result?.response?.text();
+        if (replyText && replyText.trim()) {
+          return replyText.trim();
         }
-      } catch (e) {}
+      } catch (e) {
+        console.log(`⚠️ Modelo ${modelName} falló o no disponible:`, e?.message || e);
+      }
     }
     return null;
   }
 
   async generateResponse(jid, userMessage) {
     const config = getBusinessConfig();
-    const faqs = config.objeciones_y_faqs || {};
     const rawLower = userMessage.toLowerCase().trim();
-    const lower = rawLower.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9 ]/g, " ");
     const history = chatState.getHistory(jid);
 
-    // PREGUNTA DE DIRECCIÓN / PUNTO FÍSICO / DOMICILIO
-    if (lower.includes('direccion') || lower.includes('punto fisico') || lower.includes('tienda') || lower.includes('local') || lower.includes('domicilio') || lower.includes('donde estan') || lower.includes('donde se ubican') || lower.includes('pasar por') || lower.includes('pasar a pagar')) {
-      const reply = "¡Hola! Te cuento con total transparencia que todo nuestro proceso y la entrega de la música se realizan de manera 100% digital a través de enlaces a la nube de Google Drive. No manejamos punto físico ni entregas a domicilio para evitar costos de transporte y poder sostener esta súper promoción de las 60 carpetas por solo $9.900 COP. La entrega es inmediata a tu WhatsApp tras confirmar el pago. 🎧🔥";
+    // 1. MENSAJE INICIAL DE CONTACTO (PRIMER MENSAJE DE UN CLIENTE NUEVO):
+    const isFirstMessage = history.length === 0;
+    const isInitialGreetingOrInfo = 
+      rawLower.includes('hola') || 
+      rawLower.includes('buenas') || 
+      rawLower.includes('info') || 
+      rawLower.includes('informacion') || 
+      rawLower.includes('precio') || 
+      rawLower.includes('cuanto') || 
+      rawLower.includes('anuncio') || 
+      rawLower.includes('interesa') || 
+      rawLower.includes('quiero mas');
+
+    if (isFirstMessage && isInitialGreetingOrInfo) {
+      const exactGreeting = config.respuestas_rapidas.saludo_e_info;
       chatState.addMessage(jid, 'user', userMessage);
-      chatState.addMessage(jid, 'assistant', reply);
-      return reply;
+      chatState.addMessage(jid, 'assistant', exactGreeting);
+      return exactGreeting;
     }
 
-    // A. SOLICITUD DE UN SOLO GÉNERO O CARPETA INDIVIDUAL
-    const isOnlyOneGenreRequest = 
-      lower.includes('solo norte') ||
-      lower.includes('solo salsa') ||
-      lower.includes('solo vallenato') ||
-      lower.includes('solo reggaeton') ||
-      lower.includes('solo una carpeta') ||
-      lower.includes('una sola carpeta') ||
-      lower.includes('una carpeta') ||
-      lower.includes('carpetas sueltas') ||
-      lower.includes('carpeta suelta') ||
-      lower.includes('solo una') ||
-      lower.includes('solo un genero') ||
-      lower.includes('solo genero') ||
-      lower.includes('vendes por carpeta') ||
-      lower.includes('vendes carpetas') ||
-      lower.includes('comprar por carpeta') ||
-      lower.includes('carpetas por separado') ||
-      lower.includes('vender solo') ||
-      lower.includes('vendes por separado') ||
-      lower.includes('comprar solo');
-
-    if (isOnlyOneGenreRequest) {
-      const reply = "Con total sinceridad para hablarte claro: el pack viene completo con las 60 carpetas por los mismos $9.900 COP, no vendemos carpetas sueltas. ¡Pero no te preocupes! 😉 Tú solo descargas a tu celular, PC o USB las carpetas que más te gusten (como la de Norteña). Las demás se quedan guardadas en la nube sin ocuparte nada de espacio ni almacenamiento. Así disfrutas tu música preferida y aprovechas toda la promoción. 🎧🔥";
-      chatState.addMessage(jid, 'user', userMessage);
-      chatState.addMessage(jid, 'assistant', reply);
-      return reply;
-    }
-
-    // B. SALUDO E INFORMACIÓN INICIAL MAESTRA (SI PIDE INFORMACIÓN O SALUDA - METADS INCLUIDOS)
-    const isGenericGreeting = 
-      lower.includes('hola') || 
-      lower.includes('buenas') ||
-      lower.includes('info') || 
-      lower.includes('informacion') ||
-      lower.includes('de que trata') ||
-      lower.includes('compartio datos') ||
-      lower.includes('me das informacion') ||
-      lower.includes('interesa') ||
-      lower.includes('interesado') ||
-      lower.includes('detalles') ||
-      lower.includes('de que es') ||
-      lower.includes('precio') ||
-      lower.includes('cuanto') ||
-      lower.includes('valor') ||
-      lower.includes('costo') ||
-      lower.includes('anuncio') ||
-      lower.includes('propaganda') ||
-      lower.includes('publicidad') ||
-      lower.includes('quiero mas') ||
-      lower.includes('quiero informacion');
-
-    const isExplicitPaymentKeyword = 
-      lower.includes('lo quiero') ||
-      lower.includes('la quiero') ||
-      lower.includes('lo compro') ||
-      lower.includes('la compro') ||
-      lower.includes('como lo compro') ||
-      lower.includes('como la compro') ||
-      lower.includes('quiero comprar') ||
-      lower.includes('pasame el nequi') ||
-      lower.includes('dame el nequi') ||
-      lower.includes('mandame el nequi') ||
-      lower.includes('donde pago') ||
-      lower.includes('como pago') ||
-      lower.includes('medios de pago') ||
-      lower.includes('metodos de pago') ||
-      lower.includes('quiero pagar');
-
-    if (isGenericGreeting && !isExplicitPaymentKeyword) {
-      chatState.addMessage(jid, 'user', userMessage);
-      chatState.addMessage(jid, 'assistant', config.respuestas_rapidas.saludo_e_info);
-      return config.respuestas_rapidas.saludo_e_info;
-    }
-
-    // C. INTENCIÓN DIRECTA DE COMPRA O CÓMO COMPRAR
-    const isExplicitPaymentRequest = isExplicitPaymentKeyword ||
-      lower.includes('quiero la promo') ||
-      lower.includes('quiero la promocion') ||
-      lower.includes('quiero adquirir') ||
-      lower.includes('nequi') ||
-      lower.includes('daviplata') ||
-      lower.includes('donde transfiero') ||
-      lower.includes('donde consigno') ||
-      lower.includes('donde giro') ||
-      lower.includes('dame el numero') ||
-      lower.includes('a que numero') ||
-      lower.includes('como es el pago') ||
-      lower.includes('mandame los datos') ||
-      lower.includes('dame los datos') ||
-      lower.includes('quiero comprar ya') ||
-      lower.includes('quiero pagarlo');
-
-    if (isExplicitPaymentRequest) {
-      const pagoReply = `¡Excelente decisión! 👏🔥 Con mucho gusto. El proceso es muy sencillo: realizas la transferencia de los $9.900 COP a Nequi o por llave (Bre-B):\n\n📲 Nequi: ${config.metodos_pago.nequi}\n🔑 Llave (Bre-B): ${config.metodos_pago.llave_breb}\n\nNombre: ${config.metodos_pago.titular}\n\n(Tenemos únicamente Nequi; si tienes Daviplata o cualquier otro banco, me transfieres a Nequi por medio de la llave Bre-B).\n\nPor favor, envíame la captura o comprobante una vez realices el pago y de inmediato te entregaré el pack de música y todos tus regalos automáticamente 🙌🔥🎶`;
-      chatState.addMessage(jid, 'user', userMessage);
-      chatState.addMessage(jid, 'assistant', pagoReply);
-      return pagoReply;
-    }
-
-    // D. CÓMO SE ENTREGA / CÓMO LO RECIBO / CÓMO DESCARGO / COMPUTADOR
+    // 2. PREGUNTA SOBRE ENTREGA / RECIBIR / DESCARGAR EN COMPUTADOR / CELULAR
     const isEntregaQuery = 
-      lower.includes('como recib') ||
-      lower.includes('como reciv') ||
-      lower.includes('como resib') ||
-      lower.includes('como resiv') ||
-      lower.includes('como lo recib') ||
-      lower.includes('como lo reciv') ||
-      lower.includes('como la recib') ||
-      lower.includes('como se recib') ||
-      lower.includes('como se reciv') ||
-      lower.includes('como entreg') ||
-      lower.includes('como lo entreg') ||
-      lower.includes('como se entreg') ||
-      lower.includes('como envi') ||
-      lower.includes('como me envi') ||
-      lower.includes('como lo envi') ||
-      lower.includes('como mandas') ||
-      lower.includes('como me llega') ||
-      lower.includes('como llega') ||
-      lower.includes('como es la entrega') ||
-      lower.includes('como me entregan') ||
-      lower.includes('por donde') ||
-      lower.includes('medio de entrega') ||
-      lower.includes('forma de entrega') ||
-      lower.includes('modo de entrega') ||
-      lower.includes('como descarg') ||
-      lower.includes('como lo descarg') ||
-      lower.includes('computador') ||
-      lower.includes('celular') ||
-      lower.includes('por correo') ||
-      lower.includes('por drive') ||
-      lower.includes('por whatsapp');
+      rawLower.includes('como recib') ||
+      rawLower.includes('como entregan') ||
+      rawLower.includes('como es la entrega') ||
+      rawLower.includes('como lo entregan') ||
+      rawLower.includes('como lo recibo') ||
+      rawLower.includes('como descargo') ||
+      rawLower.includes('como me llega') ||
+      rawLower.includes('medio de entrega') ||
+      rawLower.includes('forma de entrega');
 
-    if (isEntregaQuery) {
-      const reply = config.respuestas_rapidas.como_se_entrega;
+    if (isEntregaQuery && history.length <= 2) {
+      const exactEntrega = config.respuestas_rapidas.como_se_entrega;
       chatState.addMessage(jid, 'user', userMessage);
-      chatState.addMessage(jid, 'assistant', reply);
-      return reply;
+      chatState.addMessage(jid, 'assistant', exactEntrega);
+      return exactEntrega;
     }
 
-    // E. REGALO EXTRA
-    if (lower.includes('regalo extra') || lower.includes('cual es el regalo') || lower.includes('que trae el regalo') || lower.includes('regalo app') || lower.includes('bonsai play') || lower.includes('reproductor')) {
-      const reply = faqs.regalo_extra || "El regalo extra por tu compra es nuestra aplicación exclusiva **Bonsai Play** 📱🎧 (el mezclador DJ online con radio 24/7 y mezcla automática). El enlace de acceso y descarga te llegará a este chat junto con tus packs de música inmediatamente después de realizar tu pago.";
-      chatState.addMessage(jid, 'user', userMessage);
-      chatState.addMessage(jid, 'assistant', reply);
-      return reply;
-    }
-
-    // F. CUÑAS / PISADORES PERSONALIZADOS
-    if (lower.includes('cuña') || lower.includes('sampler') || lower.includes('a mi nombre')) {
-      const reply = "Con total sinceridad, la verdad lo que te diga es mentira: en el momento no trabajo haciendo cuñas ni samplers personalizados a nombres individuales. El pack viene con versiones completamente limpias y sin pisadores.";
-      chatState.addMessage(jid, 'user', userMessage);
-      chatState.addMessage(jid, 'assistant', reply);
-      return reply;
-    }
-
-    // G. GÉNEROS QUE NO TENEMOS
-    if (lower.includes('caucana') || lower.includes('cauca') || lower.includes('champeta') || lower.includes('metal') || lower.includes('clasica sinfonica') || lower.includes('opera')) {
-      const reply = "Con total sinceridad para no quedarte mal ni engañarte: Música Caucana NO tenemos en este pack. Tampoco Champeta por el momento (estamos trabajando para actualizar y subir unas carpetas de champeta más adelante). Prefiero ser 100% transparente contigo para garantizar tu satisfacción.";
-      chatState.addMessage(jid, 'user', userMessage);
-      chatState.addMessage(jid, 'assistant', reply);
-      return reply;
-    }
-
-    // H. DANCE / HOUSE / AFROBEAT
-    if (lower.includes('dance') || lower.includes('house') || lower.includes('afro') || lower.includes('electro')) {
-      const reply = "Sí vienen incluidos en las 60 carpetas, pero aclaro con total honestidad que no vienen en grandes cantidades como el reggaetón o la salsa, sino como una selección especial de ritmos para variar la fiesta.";
-      chatState.addMessage(jid, 'user', userMessage);
-      chatState.addMessage(jid, 'assistant', reply);
-      return reply;
-    }
-
-    // I. VERSIONES EXTENDED VS ORIGINALES
-    if (lower.includes('extended') || lower.includes('originales') || lower.includes('pisador') || lower.includes('limpia') || lower.includes('dj virtual') || lower.includes('serato') || lower.includes('sirve para dj') || lower.includes('negocio') || lower.includes('bar')) {
-      const reply = "Esta música viene en dos versiones: **Versión Extended** y **Versión Original**. Son versiones completamente limpias y sin pisadores (sin marcas de voz de DJ), perfectas tanto para mezclar en DJ Virtual / Serato como para sonar en tu negocio (bar, cantina, discoteca) o escuchar en el carro, casa o gimnasio. 🎧🔥";
-      chatState.addMessage(jid, 'user', userMessage);
-      chatState.addMessage(jid, 'assistant', reply);
-      return reply;
-    }
-
-    // J. SEGURIDAD / CONFIANZA / ESTAFA
-    const isTrustQuery = 
-      lower.includes('robar') || 
-      lower.includes('robo') || 
-      lower.includes('estafa') || 
-      lower.includes('estafador') || 
-      lower.includes('confiar') || 
-      lower.includes('confio') || 
-      lower.includes('confia') || 
-      lower.includes('confianza') || 
-      lower.includes('como confio') || 
-      lower.includes('como se que') || 
-      lower.includes('como se si') || 
-      lower.includes('seguro') || 
-      lower.includes('garantia') || 
-      lower.includes('engan') || 
-      lower.includes('falso') ||
-      lower.includes('trampa') ||
-      lower.includes('realidad');
-
-    if (isTrustQuery) {
-      const reply = faqs.confianza_o_estafa || `¡Te entiendo perfectamente! Es normal dudar en internet. 🤝 Te doy 100% de tranquilidad:\n1️⃣ Este es mi proyecto real y transparente. Puedes verificar mi trabajo en todas mis redes oficiales buscando como **DJ Bonsai** en YouTube, Facebook e Instagram, y ver mis videos diarios en mi canal oficial de TikTok: https://www.tiktok.com/@jeffer.1997?_r=1&_t=ZS-9AKsEsdr3uG\n2️⃣ Este proyecto hace parte de mi reto personal (pasar de 0 a 100M en 365 días y donamos el 20% a personas de bajos recursos).\n3️⃣ Si lo prefieres, te envío primero muestras de audio y el video demostrativo de las 60 carpetas antes de que realices el pago. ¡La idea es construir confianza total! 🙌🔥`;
-      chatState.addMessage(jid, 'user', userMessage);
-      chatState.addMessage(jid, 'assistant', reply);
-      return reply;
-    }
-
-    // K. CARRANGA / PARRANDERA / COLOMBIANA
-    if (lower.includes('carranga') || lower.includes('parranda') || lower.includes('diciembre') || lower.includes('bailable')) {
-      const reply = faqs.carranga_o_parrandera || "¡Claro que sí! 🔥 Trae bastante música de fiesta colombiana, parranderos, bailables de diciembre, vallenatos y géneros tradicionales en las 60 carpetas para prender la rumba en cualquier parte.";
-      chatState.addMessage(jid, 'user', userMessage);
-      chatState.addMessage(jid, 'assistant', reply);
-      return reply;
-    }
-
-    // L. SOLICITUD DE DEMOS
-    if (lower.includes('demo') || lower.includes('muestra') || lower.includes('escuchar') || lower.includes('probador') || lower.includes('audio') || lower.includes('video') || lower.includes('carpetas') || lower.includes('como viene')) {
-      const reply = "¡Claro que sí! Con mucho gusto. 😊 Aquí te comparto el video demostrativo y las muestras de audio para que escuches la calidad de sonido y veas cómo vienen organizadas las 60 carpetas en este pack de música.";
-      chatState.addMessage(jid, 'user', userMessage);
-      chatState.addMessage(jid, 'assistant', reply);
-      return reply;
-    }
-
-    // M. FECHA LÍMITE DE DESCARGA
-    if (lower.includes('limite') || lower.includes('caduca') || lower.includes('expira') || lower.includes('vence') || lower.includes('tiempo limite') || lower.includes('hasta cuando') || lower.includes('cuanto tiempo')) {
-      const reply = faqs.fecha_limite || "Tranquilo/a, los enlaces **no tienen fecha límite de descarga** ⏳❌ Puedes acceder y descargar hoy, mañana, en un mes o cuando tú quieras. Además, si actualizamos o subimos más contenido, se te actualiza automáticamente. Lo único que debes conservar son los links de acceso. 💻🎧";
-      chatState.addMessage(jid, 'user', userMessage);
-      chatState.addMessage(jid, 'assistant', reply);
-      return reply;
-    }
-
-    // N. CONFIRMACIÓN DE PAGO
-    if (lower.includes('comprobante') || lower.includes('ya pague') || lower.includes('ya transferi') || lower.includes('captura') || lower.includes('pago listo') || lower.includes('aqui esta el pago')) {
-      const reply = config.respuestas_rapidas.entrega;
-      chatState.addMessage(jid, 'user', userMessage);
-      chatState.addMessage(jid, 'assistant', reply);
-      return reply;
-    }
-
-    // O. AGRADECIMIENTO Y CIERRE NATURAL
-    if (lower === 'gracias' || lower === 'muchas gracias' || lower.includes('vale gracias') || lower.includes('excelente gracias') || lower.includes('mil gracias') || lower.includes('gracias dj')) {
-      const thanksReply = "¡Con el mayor de los gustos! 🙏 Es un verdadero placer ayudarte. Que disfrutes muchísimo tu música 🎧🔥 ¡Cualquier cosa quedo a la orden!";
-      chatState.addMessage(jid, 'user', userMessage);
-      chatState.addMessage(jid, 'assistant', thanksReply);
-      return thanksReply;
-    }
-
-    // P. RESPUESTA DINÁMICA MEDIANTE IA GEMINI
+    // 3. RESPUESTAS CONTINUAS CON RAZONAMIENTO VÍA IA GEMINI (CON HISTORIAL COMPLETO)
     if (this.isValidKey) {
       const systemPrompt = this.buildSystemPrompt(config);
       const aiReply = await this.callGeminiAPI(systemPrompt, history, userMessage);
@@ -369,15 +168,15 @@ REGLAS DE CONVERSACIÓN HUMANA:
       }
     }
 
-    // Q. RESPUESTA DINÁMICA DE RESPALDO INTELIGENTE
-    let defaultReply = config.respuestas_rapidas.saludo_e_info;
-    if (lower.includes('pago') || lower.includes('transfer') || lower.includes('comprar')) {
-      defaultReply = config.metodos_pago.instrucciones;
-    } else if (lower.includes('entrega') || lower.includes('recib') || lower.includes('envia')) {
-      defaultReply = config.respuestas_rapidas.como_se_entrega;
+    // 4. FALLBACK DE RESPALDO (SOLO SI FALLA INTERNET / GEMINI)
+    console.warn('⚠️ Usando fallback local para', jid);
+    let fallbackReply = config.respuestas_rapidas.saludo_e_info;
+    if (rawLower.includes('transfi') || rawLower.includes('pago') || rawLower.includes('nequi')) {
+      fallbackReply = "¡Excelente! Quedo super atento a la foto de tu comprobante de Nequi o por llave al 3104531477 a nombre de Jeff** Sil*** para enviarte de inmediato todos los accesos a las 60 carpetas, los 2 Terabytes y la App BonsaiPlay. 🙌🔥";
     }
+
     chatState.addMessage(jid, 'user', userMessage);
-    chatState.addMessage(jid, 'assistant', defaultReply);
-    return defaultReply;
+    chatState.addMessage(jid, 'assistant', fallbackReply);
+    return fallbackReply;
   }
 }
