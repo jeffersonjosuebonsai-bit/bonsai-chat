@@ -21,6 +21,7 @@ export class SalesAgent {
 
   buildSystemPrompt(config) {
     const emp = config.empleado_digital;
+
     return `
 Tu nombre es: ${emp.nombre} (DJ Bonsai).
 Tu proyecto personal: ${emp.historia_reto}.
@@ -52,10 +53,9 @@ REGLAS DE CONVERSACIÓN HUMANA:
     if (!this.apiKey) return null;
 
     const candidateModels = [
-      'gemini-3.8-flash',
-      'gemini-2.5-flash',
-      'gemini-2.0-flash',
-      'gemini-1.5-flash'
+      'gemini-1.5-flash',
+      'gemini-1.5-pro',
+      'gemini-2.0-flash-exp'
     ];
 
     const contents = history.map(item => ({
@@ -102,8 +102,8 @@ REGLAS DE CONVERSACIÓN HUMANA:
     const lower = rawLower.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9 ]/g, " ");
     const history = chatState.getHistory(jid);
 
-    // PREGUNTA DE DIRECCIÓN / PUNTO FÍSICO / DOMICILIO / PASAR A PAGAR EN PERSONA
-    if (lower.includes('direccion') || lower.includes('punto fisico') || lower.includes('tienda') || lower.includes('local') || lower.includes('domicilio') || lower.includes('donde estan') || lower.includes('donde se ubican') || lower.includes('pasar por') || lower.includes('pasar a pagar') || lower.includes('ubicados')) {
+    // PREGUNTA DE DIRECCIÓN / PUNTO FÍSICO / DOMICILIO
+    if (lower.includes('direccion') || lower.includes('punto fisico') || lower.includes('tienda') || lower.includes('local') || lower.includes('domicilio') || lower.includes('donde estan') || lower.includes('donde se ubican') || lower.includes('pasar por') || lower.includes('pasar a pagar')) {
       const reply = "¡Hola! Te cuento con total transparencia que todo nuestro proceso y la entrega de la música se realizan de manera 100% digital a través de enlaces a la nube de Google Drive. No manejamos punto físico ni entregas a domicilio para evitar costos de transporte y poder sostener esta súper promoción de las 60 carpetas por solo $9.900 COP. La entrega es inmediata a tu WhatsApp tras confirmar el pago. 🎧🔥";
       chatState.addMessage(jid, 'user', userMessage);
       chatState.addMessage(jid, 'assistant', reply);
@@ -117,6 +117,16 @@ REGLAS DE CONVERSACIÓN HUMANA:
       lower.includes('solo vallenato') ||
       lower.includes('solo reggaeton') ||
       lower.includes('solo una carpeta') ||
+      lower.includes('una sola carpeta') ||
+      lower.includes('una carpeta') ||
+      lower.includes('carpetas sueltas') ||
+      lower.includes('carpeta suelta') ||
+      lower.includes('solo una') ||
+      lower.includes('solo un genero') ||
+      lower.includes('solo genero') ||
+      lower.includes('vendes por carpeta') ||
+      lower.includes('vendes carpetas') ||
+      lower.includes('comprar por carpeta') ||
       lower.includes('carpetas por separado') ||
       lower.includes('vender solo') ||
       lower.includes('vendes por separado') ||
@@ -129,23 +139,28 @@ REGLAS DE CONVERSACIÓN HUMANA:
       return reply;
     }
 
-    // B. SALUDO E INFORMACIÓN INICIAL MAESTRA (SOLO SI ES UN SALUDO O PEDIDO GENÉRICO DE INFORMACIÓN)
+    // B. SALUDO E INFORMACIÓN INICIAL MAESTRA (SI PIDE INFORMACIÓN O SALUDA - METADS INCLUIDOS)
     const isGenericGreeting = 
-      lower === 'hola' ||
-      lower === 'buenas' ||
-      lower === 'buenas tardes' ||
-      lower === 'buenas noches' ||
-      lower === 'buenos dias' ||
-      lower === 'info' ||
-      lower === 'mas info' ||
-      lower === 'informacion' ||
-      lower === 'quiero informacion' ||
-      lower === 'mas informacion' ||
-      lower === 'dame informacion' ||
-      lower === 'de que trata' ||
-      lower === 'informacion por favor' ||
-      lower === 'me das informacion' ||
-      lower === 'me das mas informacion';
+      lower.includes('hola') || 
+      lower.includes('buenas') ||
+      lower.includes('info') || 
+      lower.includes('informacion') ||
+      lower.includes('de que trata') ||
+      lower.includes('compartio datos') ||
+      lower.includes('me das informacion') ||
+      lower.includes('interesa') ||
+      lower.includes('interesado') ||
+      lower.includes('detalles') ||
+      lower.includes('de que es') ||
+      lower.includes('precio') ||
+      lower.includes('cuanto') ||
+      lower.includes('valor') ||
+      lower.includes('costo') ||
+      lower.includes('anuncio') ||
+      lower.includes('propaganda') ||
+      lower.includes('publicidad') ||
+      lower.includes('quiero mas') ||
+      lower.includes('quiero informacion');
 
     const isExplicitPaymentKeyword = 
       lower.includes('lo quiero') ||
@@ -170,7 +185,7 @@ REGLAS DE CONVERSACIÓN HUMANA:
       return config.respuestas_rapidas.saludo_e_info;
     }
 
-    // C. INTENCIÓN DIRECTA DE COMPRA
+    // C. INTENCIÓN DIRECTA DE COMPRA O CÓMO COMPRAR
     const isExplicitPaymentRequest = isExplicitPaymentKeyword ||
       lower.includes('quiero la promo') ||
       lower.includes('quiero la promocion') ||
@@ -195,7 +210,7 @@ REGLAS DE CONVERSACIÓN HUMANA:
       return pagoReply;
     }
 
-    // D. CÓMO SE ENTREGA / CÓMO LO RECIBO
+    // D. CÓMO SE ENTREGA / CÓMO LO RECIBO / CÓMO DESCARGO / COMPUTADOR
     const isEntregaQuery = 
       lower.includes('como recib') ||
       lower.includes('como reciv') ||
@@ -215,6 +230,8 @@ REGLAS DE CONVERSACIÓN HUMANA:
       lower.includes('como mandas') ||
       lower.includes('como me llega') ||
       lower.includes('como llega') ||
+      lower.includes('como es la entrega') ||
+      lower.includes('como me entregan') ||
       lower.includes('por donde') ||
       lower.includes('medio de entrega') ||
       lower.includes('forma de entrega') ||
@@ -234,7 +251,7 @@ REGLAS DE CONVERSACIÓN HUMANA:
       return reply;
     }
 
-    // E. REGALO EXTRA / CUÁL ES EL REGALO EXTRA / APP BONSAI PLAY
+    // E. REGALO EXTRA
     if (lower.includes('regalo extra') || lower.includes('cual es el regalo') || lower.includes('que trae el regalo') || lower.includes('regalo app') || lower.includes('bonsai play') || lower.includes('reproductor')) {
       const reply = faqs.regalo_extra || "El regalo extra por tu compra es nuestra aplicación exclusiva **Bonsai Play** 📱🎧 (el mezclador DJ online con radio 24/7 y mezcla automática). El enlace de acceso y descarga te llegará a este chat junto con tus packs de música inmediatamente después de realizar tu pago.";
       chatState.addMessage(jid, 'user', userMessage);
@@ -242,7 +259,7 @@ REGLAS DE CONVERSACIÓN HUMANA:
       return reply;
     }
 
-    // F. CUÑAS / SAMPLERS
+    // F. CUÑAS / PISADORES PERSONALIZADOS
     if (lower.includes('cuña') || lower.includes('sampler') || lower.includes('a mi nombre')) {
       const reply = "Con total sinceridad, la verdad lo que te diga es mentira: en el momento no trabajo haciendo cuñas ni samplers personalizados a nombres individuales. El pack viene con versiones completamente limpias y sin pisadores.";
       chatState.addMessage(jid, 'user', userMessage);
@@ -252,7 +269,7 @@ REGLAS DE CONVERSACIÓN HUMANA:
 
     // G. GÉNEROS QUE NO TENEMOS
     if (lower.includes('caucana') || lower.includes('cauca') || lower.includes('champeta') || lower.includes('metal') || lower.includes('clasica sinfonica') || lower.includes('opera')) {
-      const reply = "Con total sinceridad para no quedarte mal ni engañarte: Música Caucana NO tenemos en este pack. Tampoco Champeta por el momento. Prefiero ser 100% transparente contigo para garantizar tu satisfacción.";
+      const reply = "Con total sinceridad para no quedarte mal ni engañarte: Música Caucana NO tenemos en este pack. Tampoco Champeta por el momento (estamos trabajando para actualizar y subir unas carpetas de champeta más adelante). Prefiero ser 100% transparente contigo para garantizar tu satisfacción.";
       chatState.addMessage(jid, 'user', userMessage);
       chatState.addMessage(jid, 'assistant', reply);
       return reply;
@@ -266,7 +283,7 @@ REGLAS DE CONVERSACIÓN HUMANA:
       return reply;
     }
 
-    // I. VERSIONES EXTENDED VS ORIGINALES / LIMPIAS Y SIN PISADORES
+    // I. VERSIONES EXTENDED VS ORIGINALES
     if (lower.includes('extended') || lower.includes('originales') || lower.includes('pisador') || lower.includes('limpia') || lower.includes('dj virtual') || lower.includes('serato') || lower.includes('sirve para dj') || lower.includes('negocio') || lower.includes('bar')) {
       const reply = "Esta música viene en dos versiones: **Versión Extended** y **Versión Original**. Son versiones completamente limpias y sin pisadores (sin marcas de voz de DJ), perfectas tanto para mezclar en DJ Virtual / Serato como para sonar en tu negocio (bar, cantina, discoteca) o escuchar en el carro, casa o gimnasio. 🎧🔥";
       chatState.addMessage(jid, 'user', userMessage);
@@ -295,13 +312,13 @@ REGLAS DE CONVERSACIÓN HUMANA:
       lower.includes('realidad');
 
     if (isTrustQuery) {
-      const reply = faqs.confianza_o_estafa || `¡Te entiendo perfectamente! Es normal dudar en internet. 🤝 Te doy 100% de tranquilidad:\n1️⃣ Este es mi proyecto real y transparente. Puedes verificar mi trabajo en todas mis redes oficiales buscando como **DJ Bonsai** en YouTube, Facebook e Instagram, y ver mis videos diarios en mi canal oficial de TikTok: https://www.tiktok.com/@jeffer.1997?_r=1&_t=ZS-9AKsEsdr3uG\n2️⃣ Este proyecto hace parte de mi reto personal (pasar de 0 a 100M en 365 días desde mi cabaña y donamos el 20% a personas de bajos recursos).\n3️⃣ Si lo prefieres, te envío primero muestras de audio y el video demostrativo de las 60 carpetas antes de que realices el pago. ¡La idea es construir confianza total! 🙌🔥`;
+      const reply = faqs.confianza_o_estafa || `¡Te entiendo perfectamente! Es normal dudar en internet. 🤝 Te doy 100% de tranquilidad:\n1️⃣ Este es mi proyecto real y transparente. Puedes verificar mi trabajo en todas mis redes oficiales buscando como **DJ Bonsai** en YouTube, Facebook e Instagram, y ver mis videos diarios en mi canal oficial de TikTok: https://www.tiktok.com/@jeffer.1997?_r=1&_t=ZS-9AKsEsdr3uG\n2️⃣ Este proyecto hace parte de mi reto personal (pasar de 0 a 100M en 365 días y donamos el 20% a personas de bajos recursos).\n3️⃣ Si lo prefieres, te envío primero muestras de audio y el video demostrativo de las 60 carpetas antes de que realices el pago. ¡La idea es construir confianza total! 🙌🔥`;
       chatState.addMessage(jid, 'user', userMessage);
       chatState.addMessage(jid, 'assistant', reply);
       return reply;
     }
 
-    // K. CARRANGA / PARRANDERA
+    // K. CARRANGA / PARRANDERA / COLOMBIANA
     if (lower.includes('carranga') || lower.includes('parranda') || lower.includes('diciembre') || lower.includes('bailable')) {
       const reply = faqs.carranga_o_parrandera || "¡Claro que sí! 🔥 Trae bastante música de fiesta colombiana, parranderos, bailables de diciembre, vallenatos y géneros tradicionales en las 60 carpetas para prender la rumba en cualquier parte.";
       chatState.addMessage(jid, 'user', userMessage);
@@ -309,7 +326,7 @@ REGLAS DE CONVERSACIÓN HUMANA:
       return reply;
     }
 
-    // L. DEMOS / MUESTRAS
+    // L. SOLICITUD DE DEMOS
     if (lower.includes('demo') || lower.includes('muestra') || lower.includes('escuchar') || lower.includes('probador') || lower.includes('audio') || lower.includes('video') || lower.includes('carpetas') || lower.includes('como viene')) {
       const reply = "¡Claro que sí! Con mucho gusto. 😊 Aquí te comparto el video demostrativo y las muestras de audio para que escuches la calidad de sonido y veas cómo vienen organizadas las 60 carpetas en este pack de música.";
       chatState.addMessage(jid, 'user', userMessage);
@@ -317,7 +334,7 @@ REGLAS DE CONVERSACIÓN HUMANA:
       return reply;
     }
 
-    // M. FECHA LÍMITE
+    // M. FECHA LÍMITE DE DESCARGA
     if (lower.includes('limite') || lower.includes('caduca') || lower.includes('expira') || lower.includes('vence') || lower.includes('tiempo limite') || lower.includes('hasta cuando') || lower.includes('cuanto tiempo')) {
       const reply = faqs.fecha_limite || "Tranquilo/a, los enlaces **no tienen fecha límite de descarga** ⏳❌ Puedes acceder y descargar hoy, mañana, en un mes o cuando tú quieras. Además, si actualizamos o subimos más contenido, se te actualiza automáticamente. Lo único que debes conservar son los links de acceso. 💻🎧";
       chatState.addMessage(jid, 'user', userMessage);
@@ -325,7 +342,7 @@ REGLAS DE CONVERSACIÓN HUMANA:
       return reply;
     }
 
-    // N. COMPROBANTE DE PAGO
+    // N. CONFIRMACIÓN DE PAGO
     if (lower.includes('comprobante') || lower.includes('ya pague') || lower.includes('ya transferi') || lower.includes('captura') || lower.includes('pago listo') || lower.includes('aqui esta el pago')) {
       const reply = config.respuestas_rapidas.entrega;
       chatState.addMessage(jid, 'user', userMessage);
@@ -333,16 +350,15 @@ REGLAS DE CONVERSACIÓN HUMANA:
       return reply;
     }
 
-    // O. AGRADECIMIENTO
+    // O. AGRADECIMIENTO Y CIERRE NATURAL
     if (lower === 'gracias' || lower === 'muchas gracias' || lower.includes('vale gracias') || lower.includes('excelente gracias') || lower.includes('mil gracias') || lower.includes('gracias dj')) {
       const thanksReply = "¡Con el mayor de los gustos! 🙏 Es un verdadero placer ayudarte. Que disfrutes muchísimo tu música 🎧🔥 ¡Cualquier cosa quedo a la orden!";
       chatState.addMessage(jid, 'user', userMessage);
       chatState.addMessage(jid, 'assistant', thanksReply);
-      chatState.setHumanActive(jid, true);
       return thanksReply;
     }
 
-    // P. IA GEMINI 3.8 FLASH CON RAZONAMIENTO Y CONTEXTO COMPLETO
+    // P. RESPUESTA DINÁMICA MEDIANTE IA GEMINI
     if (this.isValidKey) {
       const systemPrompt = this.buildSystemPrompt(config);
       const aiReply = await this.callGeminiAPI(systemPrompt, history, userMessage);
@@ -353,8 +369,13 @@ REGLAS DE CONVERSACIÓN HUMANA:
       }
     }
 
-    // Q. RESPUESTA DE RESPALDO
-    const defaultReply = "¡Con el mayor gusto! 🎧 Respecto a lo que me preguntas: nuestro pack viene super completo con más de 60 carpetas y 10.000 canciones por $9.900 COP. Si quieres escuchar las muestras de audio o tienes alguna inquietud sobre el contenido, dime con total confianza y te ayudo de una 🙌🔥";
+    // Q. RESPUESTA DINÁMICA DE RESPALDO INTELIGENTE
+    let defaultReply = config.respuestas_rapidas.saludo_e_info;
+    if (lower.includes('pago') || lower.includes('transfer') || lower.includes('comprar')) {
+      defaultReply = config.metodos_pago.instrucciones;
+    } else if (lower.includes('entrega') || lower.includes('recib') || lower.includes('envia')) {
+      defaultReply = config.respuestas_rapidas.como_se_entrega;
+    }
     chatState.addMessage(jid, 'user', userMessage);
     chatState.addMessage(jid, 'assistant', defaultReply);
     return defaultReply;
