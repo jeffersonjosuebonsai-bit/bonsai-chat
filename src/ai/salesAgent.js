@@ -5,7 +5,7 @@ import { chatState } from '../state/chatState.js';
 
 export class SalesAgent {
   constructor() {
-    this.apiKey = process.env.GEMINI_API_KEY;
+    this.apiKey = process.env.GEMINI_API_KEY || 'AQ.Ab8RN6JfOHV3YvcSW-Bd-pCThkaaHKFXeUn815I33FG6leCBNA';
     this.isValidKey = Boolean(this.apiKey && this.apiKey.trim().length > 10);
   }
 
@@ -21,10 +21,6 @@ export class SalesAgent {
 
   buildSystemPrompt(config) {
     const emp = config.empleado_digital;
-    const neg = config.negocio;
-    const rap = config.respuestas_rapidas;
-    const faqs = config.objeciones_y_faqs || {};
-
     return `
 Tu nombre es: ${emp.nombre} (DJ Bonsai).
 Tu proyecto personal: ${emp.historia_reto}.
@@ -56,10 +52,10 @@ REGLAS DE CONVERSACIÓN HUMANA:
     if (!this.apiKey) return null;
 
     const candidateModels = [
-      'gemini-3.5-flash-lite',
-      'gemini-3.1-flash-lite',
-      'gemini-3.5-flash',
-      'gemini-3.6-flash'
+      'gemini-3.8-flash',
+      'gemini-2.5-flash',
+      'gemini-2.0-flash',
+      'gemini-1.5-flash'
     ];
 
     const contents = history.map(item => ({
@@ -94,9 +90,7 @@ REGLAS DE CONVERSACIÓN HUMANA:
             return replyText.trim();
           }
         }
-      } catch (e) {
-        // Continuar al siguiente modelo si uno falla
-      }
+      } catch (e) {}
     }
     return null;
   }
@@ -108,11 +102,15 @@ REGLAS DE CONVERSACIÓN HUMANA:
     const lower = rawLower.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9 ]/g, " ");
     const history = chatState.getHistory(jid);
 
-    // -------------------------------------------------------------
-    // DETECCIÓN INTELIGENTE DE PREGUNTAS Y CONTROL DE FLUJO
-    // -------------------------------------------------------------
+    // PREGUNTA DE DIRECCIÓN / PUNTO FÍSICO / DOMICILIO / PASAR A PAGAR EN PERSONA
+    if (lower.includes('direccion') || lower.includes('punto fisico') || lower.includes('tienda') || lower.includes('local') || lower.includes('domicilio') || lower.includes('donde estan') || lower.includes('donde se ubican') || lower.includes('pasar por') || lower.includes('pasar a pagar') || lower.includes('ubicados')) {
+      const reply = "¡Hola! Te cuento con total transparencia que todo nuestro proceso y la entrega de la música se realizan de manera 100% digital a través de enlaces a la nube de Google Drive. No manejamos punto físico ni entregas a domicilio para evitar costos de transporte y poder sostener esta súper promoción de las 60 carpetas por solo $9.900 COP. La entrega es inmediata a tu WhatsApp tras confirmar el pago. 🎧🔥";
+      chatState.addMessage(jid, 'user', userMessage);
+      chatState.addMessage(jid, 'assistant', reply);
+      return reply;
+    }
 
-    // A. SOLICITUD DE UN SOLO GÉNERO O CARPETA INDIVIDUAL (ej. Solo Norteña, Solo Salsa, Solo una carpeta)
+    // A. SOLICITUD DE UN SOLO GÉNERO O CARPETA INDIVIDUAL
     const isOnlyOneGenreRequest = 
       lower.includes('solo norte') ||
       lower.includes('solo salsa') ||
@@ -131,23 +129,23 @@ REGLAS DE CONVERSACIÓN HUMANA:
       return reply;
     }
 
-    // B. SALUDO E INFORMACIÓN INICIAL MAESTRA (SI PIDE INFORMACIÓN O SALUDA)
-    const isInfoOrGreeting = 
-      lower.includes('hola') || 
-      lower.includes('buenas') ||
-      lower.includes('info') || 
-      lower.includes('informacion') ||
-      lower.includes('quiero informacion') ||
-      lower.includes('mas informacion') ||
-      lower.includes('dame informacion') ||
-      lower.includes('mas info') ||
-      lower.includes('de que trata') ||
-      lower.includes('puedo obtener') ||
-      lower.includes('obtener informacion') ||
-      lower.includes('mas informacion sobre esto') ||
-      lower.includes('informacion sobre esto') ||
-      lower.includes('me das informacion') ||
-      lower.includes('me das mas informacion');
+    // B. SALUDO E INFORMACIÓN INICIAL MAESTRA (SOLO SI ES UN SALUDO O PEDIDO GENÉRICO DE INFORMACIÓN)
+    const isGenericGreeting = 
+      lower === 'hola' ||
+      lower === 'buenas' ||
+      lower === 'buenas tardes' ||
+      lower === 'buenas noches' ||
+      lower === 'buenos dias' ||
+      lower === 'info' ||
+      lower === 'mas info' ||
+      lower === 'informacion' ||
+      lower === 'quiero informacion' ||
+      lower === 'mas informacion' ||
+      lower === 'dame informacion' ||
+      lower === 'de que trata' ||
+      lower === 'informacion por favor' ||
+      lower === 'me das informacion' ||
+      lower === 'me das mas informacion';
 
     const isExplicitPaymentKeyword = 
       lower.includes('lo quiero') ||
@@ -166,13 +164,13 @@ REGLAS DE CONVERSACIÓN HUMANA:
       lower.includes('metodos de pago') ||
       lower.includes('quiero pagar');
 
-    if ((history.length === 0 || isInfoOrGreeting) && !isExplicitPaymentKeyword) {
+    if (isGenericGreeting && !isExplicitPaymentKeyword) {
       chatState.addMessage(jid, 'user', userMessage);
       chatState.addMessage(jid, 'assistant', config.respuestas_rapidas.saludo_e_info);
       return config.respuestas_rapidas.saludo_e_info;
     }
 
-    // C. INTENCIÓN DIRECTA DE COMPRA O CÓMO COMPRAR ("Lo quiero", "Cómo lo compro", "Quiero la promoción", "Dame el Nequi")
+    // C. INTENCIÓN DIRECTA DE COMPRA
     const isExplicitPaymentRequest = isExplicitPaymentKeyword ||
       lower.includes('quiero la promo') ||
       lower.includes('quiero la promocion') ||
@@ -197,7 +195,7 @@ REGLAS DE CONVERSACIÓN HUMANA:
       return pagoReply;
     }
 
-    // D. CÓMO SE ENTREGA / CÓMO LO RECIBO / CÓMO DESCARGO / COMPUTADOR
+    // D. CÓMO SE ENTREGA / CÓMO LO RECIBO
     const isEntregaQuery = 
       lower.includes('como recib') ||
       lower.includes('como reciv') ||
@@ -244,7 +242,7 @@ REGLAS DE CONVERSACIÓN HUMANA:
       return reply;
     }
 
-    // F. CUÑAS / PISADORES PERSONALIZADOS / SAMPLERS A MI NOMBRE
+    // F. CUÑAS / SAMPLERS
     if (lower.includes('cuña') || lower.includes('sampler') || lower.includes('a mi nombre')) {
       const reply = "Con total sinceridad, la verdad lo que te diga es mentira: en el momento no trabajo haciendo cuñas ni samplers personalizados a nombres individuales. El pack viene con versiones completamente limpias y sin pisadores.";
       chatState.addMessage(jid, 'user', userMessage);
@@ -252,9 +250,9 @@ REGLAS DE CONVERSACIÓN HUMANA:
       return reply;
     }
 
-    // G. GÉNEROS QUE NO TENEMOS (Caucana, Champeta, Metal, Ópera) -> HONESTIDAD TOTAL
+    // G. GÉNEROS QUE NO TENEMOS
     if (lower.includes('caucana') || lower.includes('cauca') || lower.includes('champeta') || lower.includes('metal') || lower.includes('clasica sinfonica') || lower.includes('opera')) {
-      const reply = "Con total sinceridad para no quedarte mal ni engañarte: Música Caucana NO tenemos en este pack. Tampoco Champeta por el momento (estamos trabajando para actualizar y subir unas carpetas de champeta más adelante). Prefiero ser 100% transparente contigo para garantizar tu satisfacción.";
+      const reply = "Con total sinceridad para no quedarte mal ni engañarte: Música Caucana NO tenemos en este pack. Tampoco Champeta por el momento. Prefiero ser 100% transparente contigo para garantizar tu satisfacción.";
       chatState.addMessage(jid, 'user', userMessage);
       chatState.addMessage(jid, 'assistant', reply);
       return reply;
@@ -268,7 +266,7 @@ REGLAS DE CONVERSACIÓN HUMANA:
       return reply;
     }
 
-    // I. VERSIONES EXTENDED VS ORIGINALES / LIMPIAS Y SIN PISADORES / PARA DJ O NEGOCIO
+    // I. VERSIONES EXTENDED VS ORIGINALES / LIMPIAS Y SIN PISADORES
     if (lower.includes('extended') || lower.includes('originales') || lower.includes('pisador') || lower.includes('limpia') || lower.includes('dj virtual') || lower.includes('serato') || lower.includes('sirve para dj') || lower.includes('negocio') || lower.includes('bar')) {
       const reply = "Esta música viene en dos versiones: **Versión Extended** y **Versión Original**. Son versiones completamente limpias y sin pisadores (sin marcas de voz de DJ), perfectas tanto para mezclar en DJ Virtual / Serato como para sonar en tu negocio (bar, cantina, discoteca) o escuchar en el carro, casa o gimnasio. 🎧🔥";
       chatState.addMessage(jid, 'user', userMessage);
@@ -276,7 +274,7 @@ REGLAS DE CONVERSACIÓN HUMANA:
       return reply;
     }
 
-    // J. SEGURIDAD / CONFIANZA / ESTAFA / ROBAR
+    // J. SEGURIDAD / CONFIANZA / ESTAFA
     const isTrustQuery = 
       lower.includes('robar') || 
       lower.includes('robo') || 
@@ -303,7 +301,7 @@ REGLAS DE CONVERSACIÓN HUMANA:
       return reply;
     }
 
-    // K. CARRANGA / PARRANDERA / COLOMBIANA
+    // K. CARRANGA / PARRANDERA
     if (lower.includes('carranga') || lower.includes('parranda') || lower.includes('diciembre') || lower.includes('bailable')) {
       const reply = faqs.carranga_o_parrandera || "¡Claro que sí! 🔥 Trae bastante música de fiesta colombiana, parranderos, bailables de diciembre, vallenatos y géneros tradicionales en las 60 carpetas para prender la rumba en cualquier parte.";
       chatState.addMessage(jid, 'user', userMessage);
@@ -311,7 +309,7 @@ REGLAS DE CONVERSACIÓN HUMANA:
       return reply;
     }
 
-    // L. SOLICITUD DE DEMOS O VER CARPETAS O VIDEO DEMO
+    // L. DEMOS / MUESTRAS
     if (lower.includes('demo') || lower.includes('muestra') || lower.includes('escuchar') || lower.includes('probador') || lower.includes('audio') || lower.includes('video') || lower.includes('carpetas') || lower.includes('como viene')) {
       const reply = "¡Claro que sí! Con mucho gusto. 😊 Aquí te comparto el video demostrativo y las muestras de audio para que escuches la calidad de sonido y veas cómo vienen organizadas las 60 carpetas en este pack de música.";
       chatState.addMessage(jid, 'user', userMessage);
@@ -319,7 +317,7 @@ REGLAS DE CONVERSACIÓN HUMANA:
       return reply;
     }
 
-    // M. FECHA LÍMITE DE DESCARGA / HASTA CUÁNDO PUEDO DESCARGAR
+    // M. FECHA LÍMITE
     if (lower.includes('limite') || lower.includes('caduca') || lower.includes('expira') || lower.includes('vence') || lower.includes('tiempo limite') || lower.includes('hasta cuando') || lower.includes('cuanto tiempo')) {
       const reply = faqs.fecha_limite || "Tranquilo/a, los enlaces **no tienen fecha límite de descarga** ⏳❌ Puedes acceder y descargar hoy, mañana, en un mes o cuando tú quieras. Además, si actualizamos o subimos más contenido, se te actualiza automáticamente. Lo único que debes conservar son los links de acceso. 💻🎧";
       chatState.addMessage(jid, 'user', userMessage);
@@ -327,7 +325,7 @@ REGLAS DE CONVERSACIÓN HUMANA:
       return reply;
     }
 
-    // N. CONFIRMACIÓN DE PAGO / COMPROBANTE -> ENTREGA AUTOMÁTICA
+    // N. COMPROBANTE DE PAGO
     if (lower.includes('comprobante') || lower.includes('ya pague') || lower.includes('ya transferi') || lower.includes('captura') || lower.includes('pago listo') || lower.includes('aqui esta el pago')) {
       const reply = config.respuestas_rapidas.entrega;
       chatState.addMessage(jid, 'user', userMessage);
@@ -335,7 +333,7 @@ REGLAS DE CONVERSACIÓN HUMANA:
       return reply;
     }
 
-    // O. AGRADECIMIENTO Y CIERRE NATURAL POST-VENTA
+    // O. AGRADECIMIENTO
     if (lower === 'gracias' || lower === 'muchas gracias' || lower.includes('vale gracias') || lower.includes('excelente gracias') || lower.includes('mil gracias') || lower.includes('gracias dj')) {
       const thanksReply = "¡Con el mayor de los gustos! 🙏 Es un verdadero placer ayudarte. Que disfrutes muchísimo tu música 🎧🔥 ¡Cualquier cosa quedo a la orden!";
       chatState.addMessage(jid, 'user', userMessage);
@@ -344,7 +342,7 @@ REGLAS DE CONVERSACIÓN HUMANA:
       return thanksReply;
     }
 
-    // P. RESPUESTA DINÁMICA MEDIANTE IA GEMINI 3.5 FLASH LITE CON HISTORIAL COMPLETO
+    // P. IA GEMINI 3.8 FLASH CON RAZONAMIENTO Y CONTEXTO COMPLETO
     if (this.isValidKey) {
       const systemPrompt = this.buildSystemPrompt(config);
       const aiReply = await this.callGeminiAPI(systemPrompt, history, userMessage);
@@ -355,7 +353,7 @@ REGLAS DE CONVERSACIÓN HUMANA:
       }
     }
 
-    // Q. RESPUESTA DINÁMICA DE RESPALDO SI NO HAY RED O IA
+    // Q. RESPUESTA DE RESPALDO
     const defaultReply = "¡Con el mayor gusto! 🎧 Respecto a lo que me preguntas: nuestro pack viene super completo con más de 60 carpetas y 10.000 canciones por $9.900 COP. Si quieres escuchar las muestras de audio o tienes alguna inquietud sobre el contenido, dime con total confianza y te ayudo de una 🙌🔥";
     chatState.addMessage(jid, 'user', userMessage);
     chatState.addMessage(jid, 'assistant', defaultReply);
