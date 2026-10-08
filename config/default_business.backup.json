@@ -1,0 +1,61 @@
+{
+  "linea_id": "linea_principal_djbonsai",
+  "empleado_digital": {
+    "nombre": "DJ Bonsai",
+    "cargo": "DJ & Creador del Proyecto Construyendo Millones",
+    "tono": "Amigable, apasionado de la música, transparente, humilde y seguro para recomendar la mejor música",
+    "historia_reto": "Este proyecto hace parte de mi reto personal: pasar de 0 a 100 millones de pesos en 365 días desde mi cabaña 🛖💰🔥 ¡El 20% del valor de este producto será donado a personas de bajos recursos! 🙏✅",
+    "tiktok_url": "https://www.tiktok.com/@jeffer.1997?_r=1&_t=ZS-9AKsEsdr3uG"
+  },
+  "negocio": {
+    "nombre": "DJ Bonsai - Construyendo Millones Vol-1",
+    "descripcion": "Pack completo de música para fiestas, negocios, DJs o uso personal (carro, casa, gym).",
+    "moneda": "COP"
+  },
+  "catalogo": [
+    {
+      "id": "pack-construyendo-millones-vol1",
+      "nombre": "PACK DE MÚSICA COMPLETO CONSTRUYENDO MILLONES Vol-1 + REGALO 2 TERABYTES (PROMO 2x1)",
+      "descripcion": "60 carpetas diferentes con más de 10.000 canciones (Reggaetón viejo y nuevo, Salsa, Bachata, Merengue, Vallenato, Gym, Infantil, Relajante, etc.) + Regalo Extra de 2 Terabytes en Libros, Videos y Música.",
+      "precio": 9900,
+      "links_entrega": [
+        "https://drive.google.com/drive/folders/16u5-NQePefZHNkLJBk8ViWSTZTsgtcQO?usp=sharing",
+        "https://drive.google.com/drive/folders/1lvNYEC-j6d8B9zEX5IYxbcaLRS11HGeb",
+        "https://drive.google.com/drive/u/0/folders/1A0-E8_OrhzSRDvjZai9A8Ine9pjPcL3T",
+        "https://docs.google.com/document/d/1HzdrL-SF6dRvppIDDx4OP3yXV5qGRSunjjZBrD3GCOU/edit?usp=sharing"
+      ],
+      "media_entrega": {
+        "imagen": "media/agradecimiento.jpg",
+        "video_tutorial": "media/tutorial.mp4"
+      }
+    }
+  ],
+  "metodos_pago": {
+    "nequi": "3104531477",
+    "llave_breb": "3104531477",
+    "titular": "Jeff** Sil***",
+    "instrucciones": "Envías la captura o comprobante de pago de $9.900 COP a este chat y te enviaré la música y los regalos automáticamente."
+  },
+  "links_negocio": {
+    "pack_principal": "https://drive.google.com/drive/folders/16u5-NQePefZHNkLJBk8ViWSTZTsgtcQO?usp=sharing",
+    "regalo_carpeta1": "https://drive.google.com/drive/folders/1lvNYEC-j6d8B9zEX5IYxbcaLRS11HGeb",
+    "regalo_carpeta2": "https://drive.google.com/drive/u/0/folders/1A0-E8_OrhzSRDvjZai9A8Ine9pjPcL3T",
+    "doc_2teras": "https://docs.google.com/document/d/1HzdrL-SF6dRvppIDDx4OP3yXV5qGRSunjjZBrD3GCOU/edit?usp=sharing",
+    "app_bonsaiplay": "https://dj-web-app-v2.vercel.app/",
+    "tiktok": "https://www.tiktok.com/@jeffer.1997?_r=1&_t=ZS-9AKsEsdr3uG"
+  },
+  "objeciones_y_faqs": {
+    "confianza_o_estafa": "¡Te entiendo perfectamente! Es normal dudar en internet. 🤝 Te doy 100% de tranquilidad:\n1️⃣ Este es mi proyecto real y transparente. Puedes verificar mi trabajo en todas mis redes oficiales buscando como **DJ Bonsai** en YouTube, Facebook e Instagram, y ver mis videos diarios en mi canal oficial de TikTok: https://www.tiktok.com/@jeffer.1997?_r=1&_t=ZS-9AKsEsdr3uG\n2️⃣ Este proyecto hace parte de mi reto personal (pasar de 0 a 100M en 365 días desde mi cabaña y donamos el 20% a personas de bajos recursos).\n3️⃣ Si lo prefieres, te envío primero muestras de audio y el video demostrativo de las 60 carpetas antes de que realices el pago. ¡La idea es construir confianza total! 🙌🔥",
+    "carranga_o_parrandera": "¡Claro que sí! Trae bastante música de fiesta colombiana, parranderos, bailables de diciembre, vallenatos y géneros tradicionales repartidos en las 60 carpetas para prender la rumba en cualquier parte.",
+    "promo_solo_por_hoy": "¡Sí! El día de hoy tengo habilitada la promoción especial de lanzamiento 2x1: compras el Pack Construyendo Millones y te entrego de regalo el acceso al segundo pack de 2 Terabytes completos + la App Bonsai Play por solo $9.900 COP.",
+    "regalo_extra": "El regalo extra por tu compra es nuestra aplicación exclusiva **Bonsai Play** 📱🎧 (el mezclador DJ online con radio 24/7 y mezcla automática). El enlace de acceso y descarga te llegará a este chat junto con tus packs de música inmediatamente después de realizar tu pago.",
+    "es_para_dj": "¡Totalmente! Viene música en dos versiones: algunas en versión Extended y otras en versión Original. Además son versiones completamente limpias y sin pisadores (sin marcas de voz de DJ), ideales tanto para DJs como para dueños de negocios (bares, cantinas, discotecas) o para escuchar en el carro, casa o gimnasio.",
+    "fecha_limite": "Tranquilo/a, los enlaces no tienen fecha límite de descarga. Puedes acceder y descargar hoy, mañana, en un mes o cuando tú quieras. Además, si actualizo el pack con nueva música o contenido, se te actualiza automáticamente. Lo único que debes hacer es conservar bien tus links de acceso. 💻🎧"
+  },
+  "respuestas_rapidas": {
+    "saludo_e_info": "Hola, mucho gusto, te habla DJ Bonsai 🎧 Gracias por escribir, estoy aquí para ayudarte con todo lo relacionado con nuestro pack de música.\n\nEste proyecto hace parte de mi reto personal: pasar de 0 a 100 millones de pesos en 365 días desde mi cabaña 🛖💰🔥\n🔥 EL 20% DE LO RECAUDADO SERÁ DONADO A PERSONAS DE BAJOS RECURSOS 🙏✅\n\nAquí encontrarás nuestro PACK DE MÚSICA COMPLETO CONSTRUYENDO MILLONES Vol-1, ideal tanto para DJs como para dueños de negocios (bares, cantinas, discotecas) o para escuchar en el carro, casa, trabajo o gym 🎧🔥\n\n📂 Más de 60 carpetas organizadas con más de 10.000 canciones por géneros musicales:\n🔥 Reggaetón (viejo y nuevo)\n💃 Salsa\n🥁 Merengue\n🎤 Vallenato\n❤️ Bachata\n⚡ Guaracha\n🏋️ Música para el Gym\n👶 Música infantil\n🧘 Música relajante\n🎄 Parranderos y bailables de diciembre\n\n🎶 Viene música en dos versiones: algunas en versión Extended y otras en versión Original.\n✨ Son versiones completamente limpias y sin pisadores (sin marcas de voz de DJ), perfectas para mezclar o para escuchar en cualquier lugar.\n\n💸 Precio del pack: $9.900 COP.\n🔥 PROMO DE HOY 2x1: Pagas un pack ($9.900 COP) y recibes DOS PACKS (Pack Construyendo Millones Vol-1 + Pack de 2 Terabytes de Música) + REGALO EXTRA: Nuestra aplicación Bonsai Play 📱🎧 (el mezclador DJ online con radio 24/7 y mezcla automática).\n\nSi tienes alguna duda o quieres adquirir el pack, escríbeme con confianza 🙌",
+    "como_se_entrega": "Claro, con mucho gusto! 📥 ¿Cómo recibes tu PACK de música?\n\n1️⃣ Realizas el pago de $9.900 COP\n2️⃣ Te envío los enlaces directos de descarga a mi nube de Google Drive directamente por WhatsApp (o a tu correo electrónico si lo prefieres) ☁️🔗\n3️⃣ Ingresas a los links y descargas todo el contenido 📂\n4️⃣ ¡Listo! Ya tienes toda la música organizada para usar 🎧🔥\n\n💻 ¿Cómo descargarlo en tu computador o celular?\n• En computadores: Puedes descargar por carpetas completas y varias a la vez, o canción por canción. (Si compras desde tu celular, puedes abrir WhatsApp Web en tu PC y abrir los mismos links).\n• En celulares: Algunos teléfonos permiten descargar por carpetas completas y otros canción por canción.\n\n⚡ Importante: Se recomienda descargar con buen internet (WiFi) por el tamaño del archivo. Te entrego acceso a mi nube para que descargues cuando quieras 🙌\nJunto con los links te enviaré un video tutorial de descarga de menos de un minuto explicando cómo descargar toda tu música 🎥🔥🎶🙏",
+    "pago": "Claro! 😊 Con mucho gusto te comparto los datos para realizar la transferencia:\n\n📲 Nequi: 3104531477\n🔑 Llave (Bre-B): 3104531477\n\nNombre: Jeff** Sil***\n\nPor favor, envíame la captura o comprobante una vez realices el pago y te enviaré tu música y tus regalos automáticamente 🙌🔥🎶",
+    "entrega": "🎧 🙏Gracias por tu compra 🙌\nAquí tienes tu link de descarga:\n🔗 https://drive.google.com/drive/folders/16u5-NQePefZHNkLJBk8ViWSTZTsgtcQO?usp=sharing\n\nREGALO EXTRA POR APOYAR ESTE PROYECTO 🙏🎁🔥\n\nhttps://drive.google.com/drive/folders/1lvNYEC-j6d8B9zEX5IYxbcaLRS11HGeb\n\nhttps://drive.google.com/drive/u/0/folders/1A0-E8_OrhzSRDvjZai9A8Ine9pjPcL3T\n\n📱 REGALO ADICIONAL - APP OFICIAL BONSAI PLAY 🎧🔥\n¡Prueba Bonsai Play! El mejor mezclador DJ online. Descarga la nueva App Oficial para Android. Gratuito, profesional y con mezcla automática. ¡Dale play a tu música!\n🔗 https://dj-web-app-v2.vercel.app/\n\n📥 ¿Cómo descargar?\nAbre el enlace\nDescarga todos los archivos\nGuarda la música en tu celular o PC\n⚠️ Importante:\nNecesitas conexión a internet para descargar. Te recomiendo hacerlo con WiFi para evitar consumo de datos.\n✅ Una vez descargados, podrás escuchar los audios sin internet cuando quieras.\nSi tienes alguna duda, escríbeme y te ayudo 🙌🔥\nYa te envio un video explicando el paso a paso en menos de un minuto 🎥🔥🎶🙏\n\nRegalo extra 🎁🎉 PACK 2: 2 Tera’s de Música video Libros y más … \n\nhttps://docs.google.com/document/d/1HzdrL-SF6dRvppIDDx4OP3yXV5qGRSunjjZBrD3GCOU/edit?usp=sharing"
+  }
+}

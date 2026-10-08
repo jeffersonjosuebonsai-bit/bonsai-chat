@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bonsai Chat - Panel Visual & Entrenamiento de Ventas</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body { background-color: #f4f7f6; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    .card-header { background: #198754; color: white; font-weight: bold; }
+    .chat-box { height: 420px; overflow-y: auto; background: #efeae2; padding: 15px; border-radius: 8px; border: 1px solid #ccc; }
+    .message { max-width: 80%; padding: 10px 14px; border-radius: 10px; margin-bottom: 10px; clear: both; word-wrap: break-word; font-size: 14px; }
+    .user-msg { background: #d9fdd3; float: right; color: #111; }
+    .bot-msg { background: #ffffff; float: left; color: #111; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+    .product-card { background: #fff; border: 1px solid #dee2e6; border-radius: 8px; padding: 12px; margin-bottom: 12px; }
+  </style>
+</head>
+<body class="p-4">
+  <div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+      <h2 class="text-success fw-bold">🌱 Bonsai Chat <span class="badge bg-success fs-6">Entrenamiento de Ventas & Objeciones</span></h2>
+      <div class="d-flex align-items-center gap-2">
+        <span id="status-badge" class="badge bg-secondary p-2">Cargando estado IA...</span>
+        <span id="wa-badge" class="badge bg-secondary p-2">Checking WhatsApp...</span>
+      </div>
+    </div>
+
+    <div class="row">
+      <!-- Columna Izquierda: Entrenamiento Visual -->
+      <div class="col-lg-7 mb-4">
+        <div class="card shadow-sm">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <span>👤 Entrenamiento de Respuestas Humanas de DJ Bonsai</span>
+            <button class="btn btn-sm btn-light fw-bold" onclick="guardarConfiguracion()">💾 Guardar Todo</button>
+          </div>
+          <div class="card-body">
+            
+            <h5 class="text-success border-bottom pb-2 mb-3">1. Datos del Asesor y Negocio</h5>
+            <div class="row mb-3">
+              <div class="col-md-6 mb-2">
+                <label class="form-label fw-semibold">Nombre del Empleado Digital</label>
+                <input type="text" id="emp-nombre" class="form-control" placeholder="Ej: DJ Bonsai">
+              </div>
+              <div class="col-md-6 mb-2">
+                <label class="form-label fw-semibold">Cargo o Rol</label>
+                <input type="text" id="emp-cargo" class="form-control" placeholder="Ej: DJ & Creador">
+              </div>
+              <div class="col-md-12">
+                <label class="form-label fw-semibold">Nombre de tu Empresa / Negocio</label>
+                <input type="text" id="neg-nombre" class="form-control" placeholder="Ej: DJ Bonsai - Construyendo Millones">
+              </div>
+            </div>
+
+            <h5 class="text-success border-bottom pb-2 mb-3 mt-4">2. Métodos de Pago (Nequi / Daviplata / Banco)</h5>
+            <div class="row mb-3">
+              <div class="col-md-6 mb-2">
+                <label class="form-label fw-semibold">Número Nequi</label>
+                <input type="text" id="pago-nequi" class="form-control" placeholder="Ej: 3104531477">
+              </div>
+              <div class="col-md-6 mb-2">
+                <label class="form-label fw-semibold">Número Daviplata / Llave Bre-B</label>
+                <input type="text" id="pago-daviplata" class="form-control" placeholder="Ej: 3104531477">
+              </div>
+              <div class="col-md-6 mb-2">
+                <label class="form-label fw-semibold">Titular de la Cuenta</label>
+                <input type="text" id="pago-banco" class="form-control" placeholder="Ej: Jeff** Sil***">
+              </div>
+            </div>
+
+            <h5 class="text-success border-bottom pb-2 mb-3 mt-4">3. Manejo Humano de Objeciones y Preguntas Clave</h5>
+            <div class="mb-3">
+              <label class="form-label fw-semibold">🛡️ Si preguntan: "¿Cómo puedo confiar / Es una estafa / Me van a robar?"</label>
+              <textarea id="faq-confianza" class="form-control" rows="3"></textarea>
+            </div>
+            <div class="mb-3">
+              <label class="form-label fw-semibold">🎶 Si preguntan por Carranga / Música Parrandera / Colombiana:</label>
+              <textarea id="faq-carranga" class="form-control" rows="3"></textarea>
+            </div>
+            <div class="mb-3">
+              <label class="form-label fw-semibold">🔥 Si preguntan si la Promoción es el día de hoy:</label>
+              <textarea id="faq-promo" class="form-control" rows="3"></textarea>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-3 mt-4">
+              <h5 class="text-success m-0">4. Enlaces Oficiales de Entrega y Redes del Negocio</h5>
+              <button class="btn btn-sm btn-outline-success" onclick="agregarProducto()">+ Agregar Nuevo Pack</button>
+            </div>
+
+            <div class="card p-3 bg-light border mb-3">
+              <h6 class="fw-bold text-success border-bottom pb-2 mb-3">🔗 Enlaces Oficiales (Haz clic en "🔗 Probar Link" para probar que abre correctamente):</h6>
+              <div class="row g-3">
+                <div class="col-md-12">
+                  <label class="form-label small fw-semibold">1. Link Pack Principal (Google Drive)</label>
+                  <div class="input-group input-group-sm">
+                    <input type="text" id="link-pack-principal" class="form-control" placeholder="https://drive.google.com/...">
+                    <button class="btn btn-outline-primary fw-bold" onclick="probarLink('link-pack-principal')">🔗 Probar Link</button>
+                  </div>
+                </div>
+                <div class="col-md-12">
+                  <label class="form-label small fw-semibold">2. Regalo Extra Carpeta 1 (Google Drive)</label>
+                  <div class="input-group input-group-sm">
+                    <input type="text" id="link-regalo-carpeta1" class="form-control" placeholder="https://drive.google.com/...">
+                    <button class="btn btn-outline-primary fw-bold" onclick="probarLink('link-regalo-carpeta1')">🔗 Probar Link</button>
+                  </div>
+                </div>
+                <div class="col-md-12">
+                  <label class="form-label small fw-semibold">3. Regalo Extra Carpeta 2 / App (Google Drive)</label>
+                  <div class="input-group input-group-sm">
+                    <input type="text" id="link-regalo-carpeta2" class="form-control" placeholder="https://drive.google.com/...">
+                    <button class="btn btn-outline-primary fw-bold" onclick="probarLink('link-regalo-carpeta2')">🔗 Probar Link</button>
+                  </div>
+                </div>
+                <div class="col-md-12">
+                  <label class="form-label small fw-semibold">4. Regalo Extra 2 Terabytes Documento (Google Docs)</label>
+                  <div class="input-group input-group-sm">
+                    <input type="text" id="link-doc-2teras" class="form-control" placeholder="https://docs.google.com/document/d/...">
+                    <button class="btn btn-outline-primary fw-bold" onclick="probarLink('link-doc-2teras')">🔗 Probar Link</button>
+                  </div>
+                </div>
+                <div class="col-md-12">
+                  <label class="form-label small fw-semibold">5. Link App Oficial Bonsai Play (Mezclador DJ Online)</label>
+                  <div class="input-group input-group-sm">
+                    <input type="text" id="link-app-bonsaiplay" class="form-control" placeholder="https://dj-web-app-v2.vercel.app/">
+                    <button class="btn btn-outline-primary fw-bold" onclick="probarLink('link-app-bonsaiplay')">🔗 Probar Link</button>
+                  </div>
+                </div>
+                <div class="col-md-12">
+                  <label class="form-label small fw-semibold">6. Link TikTok Oficial (@djbonsai)</label>
+                  <div class="input-group input-group-sm">
+                    <input type="text" id="link-tiktok" class="form-control" placeholder="https://www.tiktok.com/@djbonsai">
+                    <button class="btn btn-outline-primary fw-bold" onclick="probarLink('link-tiktok')">🔗 Probar Link</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div id="lista-productos"></div>
+
+            <h5 class="text-success border-bottom pb-2 mb-3 mt-4">📁 5. Gestión de Archivos Multimedia (Videos, Audios, Demos y Fotos)</h5>
+            <div class="p-3 bg-light rounded border mb-3">
+              <div class="row g-3">
+                <div class="col-md-3">
+                  <label class="form-label small fw-semibold">🖼️ Tarjeta Agradecimiento</label>
+                  <input type="file" id="file-agradecimiento" class="form-control form-control-sm" accept="*/*">
+                  <button class="btn btn-sm btn-success w-100 mt-2" onclick="subirArchivo('agradecimiento', 'file-agradecimiento')">Subir Imagen</button>
+                </div>
+                <div class="col-md-3">
+                  <label class="form-label small fw-semibold">🎥 Video Tutorial Descarga</label>
+                  <input type="file" id="file-tutorial" class="form-control form-control-sm" accept="*/*">
+                  <button class="btn btn-sm btn-success w-100 mt-2" onclick="subirArchivo('tutorial', 'file-tutorial')">Subir Video Final</button>
+                </div>
+                <div class="col-md-3">
+                  <label class="form-label small fw-semibold">🎥 Video Demo Carpetas</label>
+                  <input type="file" id="file-video-demo" class="form-control form-control-sm" accept="*/*">
+                  <button class="btn btn-sm btn-success w-100 mt-2" onclick="subirArchivo('video_demo', 'file-video-demo')">Subir Video Demo</button>
+                </div>
+                <div class="col-md-3">
+                  <label class="form-label small fw-semibold">🎧 Demos Audio (Música)</label>
+                  <input type="file" id="file-demo" class="form-control form-control-sm" accept="*/*">
+                  <button class="btn btn-sm btn-success w-100 mt-2" onclick="subirArchivo('demo', 'file-demo')">Subir Audio Demo</button>
+                </div>
+              </div>
+              
+              <hr class="my-3">
+              <h6 class="fw-bold text-dark">Archivos Cargados Actualmente:</h6>
+              <div id="lista-media" class="list-group list-group-flush"></div>
+            </div>
+
+            <div class="text-end mt-4">
+              <button class="btn btn-success btn-lg px-4" onclick="guardarConfiguracion()">💾 Guardar Cambios</button>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- Columna Derecha: Conexión WhatsApp & Simulador -->
+      <div class="col-lg-5">
+
+        <!-- Card de Conexión WhatsApp -->
+        <div class="card shadow-sm mb-4 border-success">
+          <div class="card-header bg-success text-white fw-bold d-flex justify-content-between align-items-center">
+            <span>📱 Vincular WhatsApp Business</span>
+            <span id="qr-status-indicator" class="badge bg-light text-dark">Desconectado</span>
+          </div>
+          <div class="card-body text-center">
+            
+            <!-- MÉTODOS DE VINCULACIÓN -->
+            <ul class="nav nav-pills nav-justified mb-3" id="pills-tab" role="tablist">
+              <li class="nav-item" role="presentation">
+                <button class="nav-link active fw-bold" id="pills-code-tab" data-bs-toggle="pill" data-bs-target="#pills-code" type="button" role="tab">🔑 Vincular por Código (Recomendado)</button>
+              </li>
+              <li class="nav-item" role="presentation">
+                <button class="nav-link fw-bold" id="pills-qr-tab" data-bs-toggle="pill" data-bs-target="#pills-qr" type="button" role="tab">📷 Vincular por Código QR</button>
+              </li>
+            </ul>
+
+            <div class="tab-content" id="pills-tabContent">
+              <!-- TAB 1: CÓDIGO DE 8 DÍGITOS -->
+              <div class="tab-pane fade show active p-3 bg-light border rounded text-start" id="pills-code" role="tabpanel">
+                <label class="form-label fw-bold text-success mb-1">📱 Tu Número de WhatsApp Business (con código de país)</label>
+                <div class="input-group mb-2">
+                  <input type="text" id="phone-pairing-input" class="form-control fw-bold" placeholder="Ej: 573232132791" value="573232132791">
+                  <button class="btn btn-success fw-bold" onclick="solicitarCodigoEmparejamiento()">🔑 Obtener Código 8 Dígitos</button>
+                </div>
+                
+                <div id="pairing-code-display" class="my-3 p-3 bg-white border border-success rounded text-center" style="display: none;">
+                  <span class="text-muted small d-block mb-1">TU CÓDIGO DE EMPAREJAMIENTO ES:</span>
+                  <h1 class="text-success fw-bolder tracking-widest my-2" id="pairing-code-text" style="font-size: 2.8rem; letter-spacing: 4px;">-----</h1>
+                  <div class="alert alert-success small m-0 py-2 text-start">
+                    <strong>📱 Instrucciones en tu celular:</strong><br>
+                    1. Abre <strong>WhatsApp Business</strong> ➔ <strong>Ajustes</strong> ➔ <strong>Dispositivos vinculados</strong>.<br>
+                    2. Toca <strong>Vincular un dispositivo</strong> ➔ Selecciona <strong>"Vincular con el número de teléfono"</strong>.<br>
+                    3. Digita los 8 dígitos mostrados arriba. ¡Y listo!
+                  </div>
+                </div>
+              </div>
+
+              <!-- TAB 2: CÓDIGO QR -->
+              <div class="tab-pane fade text-center" id="pills-qr" role="tabpanel">
+                <p class="small text-muted mb-2">Apunta la cámara de tu celular al código QR para vincular.</p>
+                <div id="qr-container" class="my-2 p-2 bg-light border rounded" style="min-height: 180px; display: flex; align-items: center; justify-content: center; flex-direction: column;">
+                  <p class="text-secondary small m-0" id="qr-placeholder-text">Haz clic en el botón de abajo para generar el Código QR.</p>
+                  <img id="qr-image" src="" alt="Código QR WhatsApp" style="max-width: 220px; display: none;" class="img-thumbnail shadow-sm my-2">
+                </div>
+                <button id="btn-conectar-wa" class="btn btn-success w-100 fw-bold" onclick="iniciarConexionWhatsApp()">
+                  🚀 Generar Código QR de WhatsApp
+                </button>
+              </div>
+            </div>
+
+            <hr class="my-3">
+            <button class="btn btn-outline-danger btn-sm w-100 fw-bold" onclick="reiniciarSesionWhatsApp()">
+              🧹 Reiniciar Sesión / Borrar Conexión Anterior
+            </button>
+
+          </div>
+        </div>
+
+        <div class="card shadow-sm sticky-top" style="top: 20px;">
+          <div class="card-header">
+            💬 Probar Conversación en Vivo (Simulador de Ventas)
+          </div>
+          <div class="card-body">
+            <div id="chat-box" class="chat-box mb-3">
+              <div class="message bot-msg">
+                <strong id="sim-nombre">DJ Bonsai:</strong> ¡Hola! 👋 Mucho gusto, soy DJ Bonsai. ¿En qué pack de música estabas interesado hoy? 🎶✨
+              </div>
+            </div>
+            <div class="input-group">
+              <input type="text" id="user-input" class="form-control" placeholder="Escribe como cliente..." onkeypress="if(event.key==='Enter') enviarMensaje()">
+              <button class="btn btn-success" onclick="enviarMensaje()">Enviar 🚀</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let productos = [];
+
+    function probarLink(inputId) {
+      const url = document.getElementById(inputId).value.trim();
+      if (!url) {
+        alert('Por favor ingresa un enlace en el campo antes de probar.');
+        return;
+      }
+      window.open(url, '_blank');
+    }
+
+    async function cargarEstado() {
+      try {
+        const res = await fetch('/api/status');
+        const data = await res.json();
+        const badge = document.getElementById('status-badge');
+        if (data.gemini_key_presente) {
+          badge.className = 'badge bg-success p-2';
+          badge.innerText = '🟢 IA Conectada (Gemini OK)';
+        } else {
+          badge.className = 'badge bg-warning text-dark p-2';
+          badge.innerText = '⚠️ Entrenamiento Local Activo';
+        }
+
+        const waBadge = document.getElementById('wa-badge');
+        if (data.whatsapp_conectado) {
+          waBadge.className = 'badge bg-success p-2';
+          waBadge.innerText = '📱 WhatsApp Conectado (En Vivo 24/7)';
+        } else {
+          waBadge.className = 'badge bg-warning text-dark p-2';
+          waBadge.innerText = '📱 WhatsApp Desconectado (Modo Simulador)';
+        }
+
+        const resCfg = await fetch('/api/config');
+        const dataCfg = await resCfg.json();
+        if (dataCfg.success) {
+          const cfg = dataCfg.config;
+          document.getElementById('emp-nombre').value = cfg.empleado_digital.nombre || '';
+          document.getElementById('emp-cargo').value = cfg.empleado_digital.cargo || '';
+          document.getElementById('neg-nombre').value = cfg.negocio.nombre || '';
+          document.getElementById('sim-nombre').innerText = cfg.empleado_digital.nombre || 'DJ Bonsai';
+
+          const pagos = cfg.metodos_pago || {};
+          document.getElementById('pago-nequi').value = pagos.nequi || '';
+          document.getElementById('pago-daviplata').value = pagos.llave_breb || pagos.daviplata || '';
+          document.getElementById('pago-banco').value = pagos.titular || '';
+
+          const faqs = cfg.objeciones_y_faqs || {};
+          document.getElementById('faq-confianza').value = faqs.confianza_o_estafa || '';
+          document.getElementById('faq-carranga').value = faqs.carranga_o_parrandera || '';
+          document.getElementById('faq-promo').value = faqs.promo_solo_por_hoy || '';
+
+          const links = cfg.links_negocio || {};
+          document.getElementById('link-pack-principal').value = links.pack_principal || (cfg.catalogo?.[0]?.links_entrega?.[0] || '');
+          document.getElementById('link-regalo-carpeta1').value = links.regalo_carpeta1 || (cfg.catalogo?.[0]?.links_entrega?.[1] || '');
+          document.getElementById('link-regalo-carpeta2').value = links.regalo_carpeta2 || (cfg.catalogo?.[0]?.links_entrega?.[2] || '');
+          document.getElementById('link-doc-2teras').value = links.doc_2teras || (cfg.catalogo?.[0]?.links_entrega?.[3] || '');
+          document.getElementById('link-app-bonsaiplay').value = links.app_bonsaiplay || 'https://dj-web-app-v2.vercel.app/';
+          document.getElementById('link-tiktok').value = links.tiktok || (cfg.empleado_digital?.tiktok_url || '');
+
+          productos = cfg.catalogo || [];
+          renderizarProductos();
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    function renderizarProductos() {
+      const cont = document.getElementById('lista-productos');
+      cont.innerHTML = '';
+      productos.forEach((p, idx) => {
+        const div = document.createElement('div');
+        div.className = 'product-card';
+        div.innerHTML = `
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <h6 class="fw-bold text-dark m-0">Pack #${idx + 1}</h6>
+            <button class="btn btn-sm btn-outline-danger" onclick="eliminarProducto(${idx})">Eliminar</button>
+          </div>
+          <div class="row">
+            <div class="col-md-8 mb-2">
+              <label class="form-label small fw-semibold">Nombre del Pack</label>
+              <input type="text" class="form-control form-control-sm" value="${p.nombre || ''}" onchange="productos[${idx}].nombre = this.value">
+            </div>
+            <div class="col-md-4 mb-2">
+              <label class="form-label small fw-semibold">Precio (COP)</label>
+              <input type="number" class="form-control form-control-sm" value="${p.precio || 0}" onchange="productos[${idx}].precio = parseFloat(this.value)">
+            </div>
+            <div class="col-md-12 mb-2">
+              <label class="form-label small fw-semibold">Descripción</label>
+              <input type="text" class="form-control form-control-sm" value="${p.descripcion || ''}" onchange="productos[${idx}].descripcion = this.value">
+            </div>
+          </div>
+        `;
+        cont.appendChild(div);
+      });
+    }
+
+    function agregarProducto() {
+      productos.push({
+        id: 'pack-' + Date.now(),
+        nombre: 'Nuevo Pack de Música',
+        precio: 9900,
+        descripcion: 'Descripción del pack...'
+      });
+      renderizarProductos();
+    }
+
+    function eliminarProducto(idx) {
+      productos.splice(idx, 1);
+      renderizarProductos();
+    }
+
+    async function guardarConfiguracion() {
+      try {
+        const resCfg = await fetch('/api/config');
+        const dataCfg = await resCfg.json();
+        let cfg = dataCfg.config;
+
+        cfg.empleado_digital.nombre = document.getElementById('emp-nombre').value;
+        cfg.empleado_digital.cargo = document.getElementById('emp-cargo').value;
+        cfg.negocio.nombre = document.getElementById('neg-nombre').value;
+        document.getElementById('sim-nombre').innerText = cfg.empleado_digital.nombre || 'DJ Bonsai';
+
+        cfg.metodos_pago.nequi = document.getElementById('pago-nequi').value;
+        cfg.metodos_pago.llave_breb = document.getElementById('pago-daviplata').value;
+        cfg.metodos_pago.titular = document.getElementById('pago-banco').value;
+
+        if (!cfg.objeciones_y_faqs) cfg.objeciones_y_faqs = {};
+        cfg.objeciones_y_faqs.confianza_o_estafa = document.getElementById('faq-confianza').value;
+        cfg.objeciones_y_faqs.carranga_o_parrandera = document.getElementById('faq-carranga').value;
+        cfg.objeciones_y_faqs.promo_solo_por_hoy = document.getElementById('faq-promo').value;
+
+        if (!cfg.links_negocio) cfg.links_negocio = {};
+        cfg.links_negocio.pack_principal = document.getElementById('link-pack-principal').value;
+        cfg.links_negocio.regalo_carpeta1 = document.getElementById('link-regalo-carpeta1').value;
+        cfg.links_negocio.regalo_carpeta2 = document.getElementById('link-regalo-carpeta2').value;
+        cfg.links_negocio.doc_2teras = document.getElementById('link-doc-2teras').value;
+        cfg.links_negocio.app_bonsaiplay = document.getElementById('link-app-bonsaiplay').value || 'https://dj-web-app-v2.vercel.app/';
+        cfg.links_negocio.tiktok = document.getElementById('link-tiktok').value;
+
+        if (cfg.catalogo && cfg.catalogo.length > 0) {
+          cfg.catalogo[0].links_entrega = [
+            cfg.links_negocio.pack_principal,
+            cfg.links_negocio.regalo_carpeta1,
+            cfg.links_negocio.regalo_carpeta2,
+            cfg.links_negocio.doc_2teras
+          ];
+        }
+        if (cfg.empleado_digital) {
+          cfg.empleado_digital.tiktok_url = cfg.links_negocio.tiktok;
+        }
+
+        cfg.respuestas_rapidas.entrega = `🎧 🙏Gracias por tu compra 🙌\nAquí tienes tu link de descarga:\n🔗 ${cfg.links_negocio.pack_principal}\n\nREGALO EXTRA POR APOYAR ESTE PROYECTO 🙏🎁🔥\n\n${cfg.links_negocio.regalo_carpeta1}\n\n${cfg.links_negocio.regalo_carpeta2}\n\n📱 REGALO ADICIONAL - APP OFICIAL BONSAI PLAY 🎧🔥\n¡Prueba Bonsai Play! El mejor mezclador DJ online. Descarga la nueva App Oficial para Android. Gratuito, profesional y con mezcla automática. ¡Dale play a tu música!\n🔗 ${cfg.links_negocio.app_bonsaiplay}\n\n📥 ¿Cómo descargar?\nAbre el enlace\nDescarga todos los archivos\nGuarda la música en tu celular o PC\n⚠️ Importante:\nNecesitas conexión a internet para descargar. Te recomiendo hacerlo con WiFi para evitar consumo de datos.\n✅ Una vez descargados, podrás escuchar los audios sin internet cuando quieras.\nSi tienes alguna duda, escríbeme y te ayudo 🙌🔥\nYa te envio un video explicando el paso a paso en menos de un minuto 🎥🔥🎶🙏\n\nRegalo extra 🎁🎉2 Tera’s de Música video Libros y más … \n\n${cfg.links_negocio.doc_2teras}`;
+
+        cfg.catalogo = productos;
+
+        const res = await fetch('/api/config', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(cfg)
+        });
+        const resData = await res.json();
+        alert('✅ Entrenamiento guardado exitosamente.');
+      } catch (e) {
+        alert('Error al guardar: ' + e.message);
+      }
+    }
+
+    async function enviarMensaje() {
+      const input = document.getElementById('user-input');
+      const text = input.value.trim();
+      if (!text) return;
+
+      const chatBox = document.getElementById('chat-box');
+      
+      const userDiv = document.createElement('div');
+      userDiv.className = 'message user-msg';
+      userDiv.innerText = text;
+      chatBox.appendChild(userDiv);
+      input.value = '';
+      chatBox.scrollTop = chatBox.scrollHeight;
+
+      try {
+        const res = await fetch('/api/simulate-chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ jid: 'web_simulator', message: text })
+        });
+        const data = await res.json();
+        
+        let mediaHtml = '';
+        if (data.attachedMedia && data.attachedMedia.length > 0) {
+          mediaHtml += '<div class="mt-2 p-2 bg-light rounded border">';
+          data.attachedMedia.forEach(m => {
+            if (m.type === 'audio') {
+              mediaHtml += `<div class="my-1"><small class="fw-bold">🎧 ${m.name}</small><audio controls src="${m.url}" class="w-100 mt-1" style="max-height: 36px;"></audio></div>`;
+            } else if (m.type === 'video') {
+              mediaHtml += `<div class="my-1"><small class="fw-bold">${m.caption || '🎥 Video'}</small><video controls src="${m.url}" style="max-height: 140px; width: 100%; border-radius: 4px;" class="mt-1"></video></div>`;
+            } else if (m.type === 'image') {
+              mediaHtml += `<div class="my-1"><small class="fw-bold">${m.caption || '🖼️ Imagen'}</small><br><img src="${m.url}" style="max-height: 120px; border-radius: 4px;" class="mt-1"></div>`;
+            }
+          });
+          mediaHtml += '</div>';
+        }
+
+        const botDiv = document.createElement('div');
+        botDiv.className = 'message bot-msg';
+        botDiv.innerHTML = `<strong>${document.getElementById('emp-nombre').value}:</strong> ${data.botReply.replace(/\n/g, '<br>')}${mediaHtml}`;
+        chatBox.appendChild(botDiv);
+        chatBox.scrollTop = chatBox.scrollHeight;
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    async function cargarMedia() {
+      try {
+        const res = await fetch('/api/media/list');
+        const data = await res.json();
+        const listDiv = document.getElementById('lista-media');
+        listDiv.innerHTML = '';
+
+        if (data.success && data.media.length > 0) {
+          data.media.forEach((item, idx) => {
+            const div = document.createElement('div');
+            div.className = 'list-group-item bg-white border rounded my-2 p-3 shadow-sm';
+            
+            let tag = '<span class="badge bg-secondary">Archivo</span>';
+            if (item.category === 'agradecimiento') tag = '<span class="badge bg-primary fs-6">🖼️ Imagen Agradecimiento</span>';
+            if (item.category === 'tutorial') tag = '<span class="badge bg-info text-dark fs-6">🎥 Video Tutorial (Final)</span>';
+            if (item.category === 'video_demo') tag = '<span class="badge bg-warning text-dark fs-6">🎥 Video Demo Carpetas</span>';
+            if (item.category === 'demo') tag = '<span class="badge bg-success fs-6">🎧 Demo de Audio</span>';
+
+            const sizeMb = (item.size / (1024 * 1024)).toFixed(2);
+            
+            let playerHtml = '';
+            const lowerName = (item.name || '').toLowerCase();
+            const isVideo = item.category === 'tutorial' || lowerName.endsWith('.mp4') || lowerName.endsWith('.webm') || lowerName.endsWith('.mov');
+            const isImage = item.category === 'agradecimiento' || lowerName.endsWith('.jpg') || lowerName.endsWith('.jpeg') || lowerName.endsWith('.png') || lowerName.endsWith('.webp');
+            const isAudio = item.category === 'demo' || (!isVideo && !isImage);
+
+            if (isAudio) {
+              playerHtml = `
+                <div class="p-2 bg-light rounded border mt-2">
+                  <div class="d-flex align-items-center gap-2 mb-2">
+                    <button id="btn-play-${idx}" class="btn btn-success fw-bold btn-sm px-3" onclick="reproducirAudio('${item.url}', 'btn-play-${idx}')">
+                      ▶️ Escuchar Demo
+                    </button>
+                    <span id="status-audio-${idx}" class="small text-muted">Haz clic para escuchar el audio de la canción</span>
+                  </div>
+                  <audio id="audio-${idx}" controls class="w-100" style="max-height: 40px;">
+                    <source src="${item.url}">
+                    Tu navegador no soporta reproductor de audio.
+                  </audio>
+                </div>
+              `;
+            } else if (isVideo) {
+              playerHtml = `
+                <div class="mt-2">
+                  <video controls style="max-height: 180px; width: 100%; border-radius: 6px;" src="${item.url}"></video>
+                </div>
+              `;
+            } else if (isImage) {
+              playerHtml = `
+                <div class="mt-2 d-flex align-items-center gap-3 bg-light p-2 rounded border">
+                  <img src="${item.url}" style="max-height: 100px; border-radius: 6px; border: 1px solid #ddd; cursor: pointer;" onclick="verImagenAmpliada('${item.url}')" title="Haz clic para ampliar">
+                  <div>
+                    <button class="btn btn-outline-primary btn-sm fw-bold mb-1" onclick="verImagenAmpliada('${item.url}')">
+                      🔍 Ampliar Imagen en Tamaño Completo
+                    </button>
+                    <div class="small text-muted">Haz clic para leer claramente el texto de la imagen</div>
+                  </div>
+                </div>
+              `;
+            }
+
+            div.innerHTML = `
+              <div class="w-100">
+                <div class="d-flex justify-content-between align-items-center border-bottom pb-2">
+                  <div>
+                    ${tag} 
+                    <strong class="ms-2 text-dark fs-6">${item.name}</strong> 
+                    <small class="text-muted">(${sizeMb} MB)</small>
+                  </div>
+                  <button class="btn btn-sm btn-outline-danger" onclick="eliminarMedia('${item.name}', '${item.category}')">🗑️ Eliminar</button>
+                </div>
+                ${playerHtml}
+              </div>
+            `;
+            listDiv.appendChild(div);
+          });
+        } else {
+          listDiv.innerHTML = '<div class="text-muted small p-2">No hay archivos subidos aún.</div>';
+        }
+      } catch (e) {
+        console.error('Error cargando lista media:', e);
+      }
+    }
+
+    let audioActual = null;
+    let btnAudioActual = null;
+
+    function reproducirAudio(url, btnId) {
+      const btn = document.getElementById(btnId);
+      if (audioActual && !audioActual.paused) {
+        audioActual.pause();
+        if (btnAudioActual) btnAudioActual.innerText = '▶️ Escuchar Demo';
+        if (btnAudioActual === btn) return;
+      }
+
+      audioActual = new Audio(url);
+      btnAudioActual = btn;
+      btn.innerText = '🔊 Reproduciendo... (Pausar)';
+      
+      audioActual.play().catch(err => {
+        alert('Error reproduciendo el audio: ' + err.message);
+        btn.innerText = '▶️ Escuchar Demo';
+      });
+
+      audioActual.onended = () => {
+        btn.innerText = '▶️ Escuchar Demo';
+      };
+    }
+
+    function verImagenAmpliada(url) {
+      document.getElementById('modal-img-src').src = url;
+      const modal = new bootstrap.Modal(document.getElementById('imageModal'));
+      modal.show();
+    }
+
+    async function subirArchivo(mediaType, inputId) {
+      const fileInput = document.getElementById(inputId);
+      if (!fileInput.files || fileInput.files.length === 0) {
+        alert('Por favor selecciona un archivo primero.');
+        return;
+      }
+      const file = fileInput.files[0];
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('mediaType', mediaType);
+
+      try {
+        const res = await fetch('/api/media/upload', {
+          method: 'POST',
+          body: formData
+        });
+        const data = await res.json();
+        if (data.success) {
+          alert('✅ Archivo subido exitosamente.');
+          fileInput.value = '';
+          cargarMedia();
+        } else {
+          alert('❌ Error al subir: ' + data.error);
+        }
+      } catch (e) {
+        alert('Error en subida: ' + e.message);
+      }
+    }
+
+    async function eliminarMedia(filename, category) {
+      if (!confirm(`¿Seguro que deseas eliminar ${filename}?`)) return;
+      try {
+        const res = await fetch('/api/media/delete', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ filename, category })
+        });
+        const data = await res.json();
+        if (data.success) {
+          cargarMedia();
+        } else {
+          alert('Error: ' + data.error);
+        }
+      } catch (e) {
+        alert('Error al eliminar: ' + e.message);
+      }
+    }
+
+    async function solicitarCodigoEmparejamiento() {
+      const phoneInput = document.getElementById('phone-pairing-input');
+      const phone = phoneInput.value.trim();
+      if (!phone) {
+        alert('Por favor ingresa tu número de teléfono (ej. 573104531477)');
+        return;
+      }
+
+      const displayDiv = document.getElementById('pairing-code-display');
+      const codeText = document.getElementById('pairing-code-text');
+      displayDiv.style.display = 'block';
+      codeText.innerText = '⏳ Generando...';
+
+      try {
+        const res = await fetch('/api/whatsapp/pairing-code', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ phoneNumber: phone })
+        });
+        const data = await res.json();
+        if (data.success && data.pairingCode) {
+          codeText.innerText = data.pairingCode;
+        } else if (data.isConnected) {
+          alert('🟢 WhatsApp ya está conectado.');
+          codeText.innerText = 'CONECTADO';
+        } else {
+          alert('❌ Error: ' + (data.error || 'No se pudo generar el código'));
+          codeText.innerText = 'ERROR';
+        }
+      } catch (e) {
+        alert('Error: ' + e.message);
+        codeText.innerText = 'ERROR';
+      }
+    }
+
+    async function reiniciarSesionWhatsApp() {
+      if (!confirm('¿Deseas borrar la sesión anterior y generar un nuevo código limpio?')) return;
+      try {
+        const res = await fetch('/api/whatsapp/reset', { method: 'POST' });
+        const data = await res.json();
+        alert('🧹 Sesión limpiada. Generando nuevo código...');
+        const displayDiv = document.getElementById('pairing-code-display');
+        if (displayDiv) displayDiv.style.display = 'none';
+        verificarEstadoWhatsApp();
+      } catch (e) {
+        alert('Error al reiniciar sesión: ' + e.message);
+      }
+    }
+
+    async function iniciarConexionWhatsApp() {
+      const btn = document.getElementById('btn-conectar-wa');
+      const txt = document.getElementById('qr-placeholder-text');
+      btn.disabled = true;
+      btn.innerText = '⏳ Conectando WhatsApp y generando QR...';
+      txt.innerText = 'Iniciando navegador WhatsApp... Por favor espera unos segundos.';
+
+      try {
+        await fetch('/api/whatsapp/connect', { method: 'POST' });
+        verificarEstadoWhatsApp();
+      } catch (e) {
+        btn.disabled = false;
+        btn.innerText = '🚀 Generar Código QR de WhatsApp';
+        txt.innerText = 'Error al iniciar conexión: ' + e.message;
+      }
+    }
+
+    async function verificarEstadoWhatsApp() {
+      try {
+        const res = await fetch('/api/whatsapp-status');
+        const data = await res.json();
+
+        const waBadge = document.getElementById('wa-badge');
+        const indicator = document.getElementById('qr-status-indicator');
+        const qrImg = document.getElementById('qr-image');
+        const qrTxt = document.getElementById('qr-placeholder-text');
+        const btn = document.getElementById('btn-conectar-wa');
+
+        if (data.isConnected) {
+          waBadge.className = 'badge bg-success p-2';
+          waBadge.innerText = '📱 WhatsApp Conectado (En Vivo 24/7)';
+          indicator.className = 'badge bg-success';
+          indicator.innerText = '🟢 Conectado';
+          qrImg.style.display = 'none';
+          qrTxt.innerHTML = '🎉 <strong class="text-success">¡WhatsApp Business está conectado y respondiendo en vivo 24/7!</strong>';
+          btn.disabled = false;
+          btn.className = 'btn btn-success w-100 fw-bold';
+          btn.innerText = '✅ WhatsApp Conectado y Activo';
+        } else if (data.qrDataUrl) {
+          waBadge.className = 'badge bg-warning text-dark p-2';
+          waBadge.innerText = '📱 Escanea el Código QR';
+          indicator.className = 'badge bg-warning text-dark';
+          indicator.innerText = '📱 Listo para Escanear';
+          qrImg.src = data.qrDataUrl;
+          qrImg.style.display = 'block';
+          qrTxt.innerText = 'Abre WhatsApp Business en tu celular y escanea este código:';
+          btn.disabled = false;
+          btn.className = 'btn btn-warning text-dark w-100 fw-bold';
+          btn.innerText = '🔄 Código QR Listo (Escanéalo Ahora)';
+        } else {
+          waBadge.className = 'badge bg-secondary p-2';
+          waBadge.innerText = '📱 WhatsApp No Vinculado';
+          indicator.className = 'badge bg-secondary';
+          indicator.innerText = 'Desconectado';
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    cargarEstado();
+    cargarMedia();
+    verificarEstadoWhatsApp();
+    setInterval(verificarEstadoWhatsApp, 3000);
+  </script>
+
+  <!-- Modal para ver Imagen en Tamaño Completo -->
+  <div class="modal fade" id="imageModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
+      <div class="modal-content">
+        <div class="modal-header bg-primary text-white">
+          <h5 class="modal-title fw-bold">🖼️ Vista Previa en Tamaño Completo</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body text-center p-3" style="background-color: #1a1a1a;">
+          <img id="modal-img-src" src="" style="max-width: 100%; max-height: 80vh; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.5);">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

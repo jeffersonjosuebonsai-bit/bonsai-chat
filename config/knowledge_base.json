@@ -1,0 +1,29 @@
+{
+  "generos_incluidos": [
+    "Reggaetón Clásico y Nuevo (Hits 2026)",
+    "Salsa (Clásica, Romántica, Choque)",
+    "Bachata",
+    "Merengue & Mambo",
+    "Vallenato (Clásico y Nueva Ola)",
+    "Guaracha & Electrónica Rumbera",
+    "Música Parrandera y Bailable de Diciembre",
+    "Música para el Gym y Entrenamiento",
+    "Música Infantil",
+    "Música Relajante / Instrumental"
+  ],
+  "generos_NO_incluidos": [
+    "Música Caucana o Folclor Caucano específico",
+    "Música Clásica Sinfónica / Ópera",
+    "Heavy Metal / Hard Rock",
+    "Música Religiosa Específica"
+  ],
+  "diferencia_versiones": {
+    "versiones_extended": "El pack incluye carpetas especiales con ediciones Extended, Intro/Outro y cortes limpios ideal para DJs que usan DJ Virtual, Serato, Rekordbox o Traktor.",
+    "versiones_originales": "También incluye carpetas con versiones originales y radio edit para escuchar directamente en el carro, casa, gym o altavoces sin mezclar."
+  },
+  "filosofia_honestidad": "Jamás decir mentiras al cliente para vender. Si preguntan por un género que no tenemos (como música caucana), responder con total honestidad diciendo que no viene en el pack, pero destacar los géneros de fiesta que sí incluye. No arriesgar la reputación en redes sociales.",
+  "retraso_escritura_segundos": {
+    "minimo": 2,
+    "maximo": 5
+  }
+}
