@@ -71,8 +71,11 @@ REGLAS DE RAZONAMIENTO Y CONDUCTA:
 5. SI EL CLIENTE PREGUNTA POR CONFIAZA / SEGURIDAD / ESTAFA:
    - Tranquilízalo con humildad: Menciona que eres DJ Bonsai, que es tu proyecto transparente (reto 0 a 100M con 20% de donaciones), invítalo a ver tu TikTok (${emp.tiktok_url}), y dile que con gusto le puedes enviar muestras de audio y vídeo antes de pagar.
 
-6. PROHIBICIÓN ABSOLUTA: JAMÁS menciones la palabra "cabaña" ni "desde mi cabaña".
-7. Mantén las respuestas fluidas, breves y al grano cuando el cliente esté listo para comprar.
+6. SI EL CLIENTE AGRADECE (ej. 'gracias', 'muchas gracias', 'vale gracias', 'mil gracias', 'excelente gracias'):
+   - Responde de forma breve, atenta y totalmente neutra sin insistir en ventas ni pedir comprobantes (ej: '¡Con el mayor de los gustos! 🙏 Es un verdadero placer. ¡Cualquier cosa por aquí quedo a la orden! 🎧🔥').
+
+7. PROHIBICIÓN ABSOLUTA: JAMÁS menciones la palabra "cabaña" ni "desde mi cabaña".
+8. Mantén las respuestas fluidas, breves y al grano cuando el cliente esté listo para comprar.
 `.trim();
   }
 
@@ -118,7 +121,26 @@ REGLAS DE RAZONAMIENTO Y CONDUCTA:
     const rawLower = userMessage.toLowerCase().trim();
     const history = chatState.getHistory(jid);
 
-    // 1. MENSAJE INICIAL DE CONTACTO (PRIMER MENSAJE DE UN CLIENTE NUEVO):
+    // 1. AGRADECIMIENTOS DIRECTOS Y CIERRES NEUTROS (CORRECCIÓN LIMPIA Y UNIVERSAL)
+    const isThanksMessage = 
+      rawLower === 'gracias' || 
+      rawLower === 'muchas gracias' || 
+      rawLower === 'vale gracias' || 
+      rawLower === 'excelente gracias' || 
+      rawLower === 'mil gracias' || 
+      rawLower === 'gracias dj' || 
+      rawLower === 'ok gracias' || 
+      rawLower === 'listo gracias' || 
+      rawLower === 'perfecto gracias';
+
+    if (isThanksMessage) {
+      const neutralThanksReply = "¡Con el mayor de los gustos! 🙏 Es un verdadero placer. ¡Cualquier cosa por aquí quedo a la orden! 🎧🔥";
+      chatState.addMessage(jid, 'user', userMessage);
+      chatState.addMessage(jid, 'assistant', neutralThanksReply);
+      return neutralThanksReply;
+    }
+
+    // 2. MENSAJE INICIAL DE CONTACTO (PRIMER MENSAJE DE UN CLIENTE NUEVO):
     const isFirstMessage = history.length === 0;
     const isInitialGreetingOrInfo = 
       rawLower.includes('hola') || 
@@ -138,7 +160,7 @@ REGLAS DE RAZONAMIENTO Y CONDUCTA:
       return exactGreeting;
     }
 
-    // 2. PREGUNTA SOBRE ENTREGA / RECIBIR / DESCARGAR EN COMPUTADOR / CELULAR
+    // 3. PREGUNTA SOBRE ENTREGA / RECIBIR / DESCARGAR EN COMPUTADOR / CELULAR
     const isEntregaQuery = 
       rawLower.includes('como recib') ||
       rawLower.includes('como entregan') ||
@@ -157,7 +179,7 @@ REGLAS DE RAZONAMIENTO Y CONDUCTA:
       return exactEntrega;
     }
 
-    // 3. RESPUESTAS CONTINUAS CON RAZONAMIENTO VÍA IA GEMINI (CON HISTORIAL COMPLETO)
+    // 4. RESPUESTAS CONTINUAS CON RAZONAMIENTO VÍA IA GEMINI (CON HISTORIAL COMPLETO)
     if (this.isValidKey) {
       const systemPrompt = this.buildSystemPrompt(config);
       const aiReply = await this.callGeminiAPI(systemPrompt, history, userMessage);
@@ -168,7 +190,7 @@ REGLAS DE RAZONAMIENTO Y CONDUCTA:
       }
     }
 
-    // 4. FALLBACK DE RESPALDO (SOLO SI FALLA INTERNET / GEMINI)
+    // 5. FALLBACK DE RESPALDO (SOLO SI FALLA INTERNET / GEMINI)
     console.warn('⚠️ Usando fallback local para', jid);
     let fallbackReply = config.respuestas_rapidas.saludo_e_info;
     if (rawLower.includes('transfi') || rawLower.includes('pago') || rawLower.includes('nequi')) {
