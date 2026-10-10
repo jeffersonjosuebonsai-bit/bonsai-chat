@@ -173,14 +173,16 @@ export async function connectWhatsApp(pairingPhoneNumber = null) {
 
         // CONTROL HUMANO DE PAUSA / ACTIVACIÓN Y DETECCIÓN DE INTERVENCIÓN DEL DJ
         if (fromMe) {
-          if (lowerCmd === '/pausa' || lowerCmd === 'pausa' || lowerCmd === 'pausar') {
+          if (lowerCmd === '/pausa') {
             chatState.setHumanActive(jid, true);
-            console.log(`⏸️ Bot pausado silenciosamente en ${jid} por comando manual del DJ.`);
+            console.log(`⏸️ Bot pausado en ${jid} por comando /pausa`);
+            await sock.sendMessage(jid, { text: '⚙️ [Bonsai Chat]: Bot pausado para este chat. DJ Bonsai en persona tomará el control.' });
             continue;
           }
-          if (lowerCmd === '/bot' || lowerCmd === '/activar' || lowerCmd === 'bot' || lowerCmd === 'activar') {
+          if (lowerCmd === '/bot' || lowerCmd === '/activar') {
             chatState.setHumanActive(jid, false);
-            console.log(`▶️ Bot reactivado silenciosamente en ${jid} por comando manual del DJ.`);
+            console.log(`▶️ Bot reactivado en ${jid} por comando /bot`);
+            await sock.sendMessage(jid, { text: '⚙️ [Bonsai Chat]: Bot reactivado exitosamente.' });
             continue;
           }
 
@@ -303,7 +305,6 @@ export async function connectWhatsApp(pairingPhoneNumber = null) {
 
         if (isImageMsg || isPaymentKeyword) {
           console.log(`📸 Comprobante de pago recibido de ${jid}. Entregando pack y regalos...`);
-          chatState.setPaid(jid, true);
           const config = getBusinessConfig();
           const entregaText = config.respuestas_rapidas.entrega;
           await sock.sendMessage(jid, { text: entregaText });
@@ -337,27 +338,23 @@ export async function connectWhatsApp(pairingPhoneNumber = null) {
           continue;
         }
 
-        // DEMOS DE AUDIO Y VIDEO CON NORMALIZACIÓN DE ACENTOS Y PALABRAS CLAVE AMPLIADAS
-        const cleanTxt = lowerTxt.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        // DEMOS DE AUDIO Y VIDEO (CON PALABRAS CLAVE ADICIONALES: demostración, prueba, ejemplo)
         const isDemoKeyword = 
-          cleanTxt.includes('demo') || 
-          cleanTxt.includes('muestra') || 
-          cleanTxt.includes('prueba') || 
-          cleanTxt.includes('probar') || 
-          cleanTxt.includes('ejemplo') || 
-          cleanTxt.includes('escuchar') || 
-          cleanTxt.includes('probador') || 
-          cleanTxt.includes('audio') || 
-          cleanTxt.includes('video') || 
-          cleanTxt.includes('carpeta') || 
-          cleanTxt.includes('como viene') || 
-          cleanTxt.includes('como suena') || 
-          cleanTxt.includes('como es') || 
-          cleanTxt.includes('demostracion') || 
-          cleanTxt.includes('ensename') || 
-          cleanTxt.includes('muestrame') || 
-          cleanTxt.includes('adelanto') || 
-          cleanTxt.includes('avance');
+          lowerTxt.includes('demo') || 
+          lowerTxt.includes('muestra') || 
+          lowerTxt.includes('escuchar') || 
+          lowerTxt.includes('probador') || 
+          lowerTxt.includes('audio') || 
+          lowerTxt.includes('video') || 
+          lowerTxt.includes('carpetas') || 
+          lowerTxt.includes('como viene') ||
+          lowerTxt.includes('demostración') ||
+          lowerTxt.includes('demostracion') ||
+          lowerTxt.includes('prueba') ||
+          lowerTxt.includes('pruebas') ||
+          lowerTxt.includes('probar') ||
+          lowerTxt.includes('ejemplo') ||
+          lowerTxt.includes('ejemplos');
 
         if (isDemoKeyword) {
           const { audioFiles, videoDemo } = getMediaFiles();
@@ -423,7 +420,7 @@ export async function connectWhatsApp(pairingPhoneNumber = null) {
   return sock;
 }
 
-export async function requestWhatsAppPairingCode(phoneNumber) {
+export function requestWhatsAppPairingCode(phoneNumber) {
   if (!phoneNumber) throw new Error('Se requiere número de teléfono (ej. 573104531477)');
   const cleanPhone = phoneNumber.replace(/[^0-9]/g, '');
 
@@ -434,7 +431,6 @@ export async function requestWhatsAppPairingCode(phoneNumber) {
     } catch (e) {}
     activeSocket = null;
   }
-  await new Promise(r => setTimeout(r, 500));
 
   const authFolder = path.join(process.cwd(), 'baileys_auth');
   if (fs.existsSync(authFolder)) {
@@ -446,11 +442,10 @@ export async function requestWhatsAppPairingCode(phoneNumber) {
   isWhatsAppConnected = false;
   isInitializing = false;
 
-  await connectWhatsApp(cleanPhone);
-  return { success: true, pairingCode: latestPairingCode };
+  return connectWhatsApp(cleanPhone);
 }
 
-export async function resetWhatsAppSession() {
+export function resetWhatsAppSession() {
   console.log('🔄 Reiniciando sesión de Baileys y limpiando credenciales...');
   isWhatsAppConnected = false;
   isInitializing = false;
@@ -464,7 +459,6 @@ export async function resetWhatsAppSession() {
     } catch (e) {}
     activeSocket = null;
   }
-  await new Promise(r => setTimeout(r, 500));
 
   const authFolder = path.join(process.cwd(), 'baileys_auth');
   if (fs.existsSync(authFolder)) {
