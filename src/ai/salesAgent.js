@@ -7,6 +7,11 @@ export class SalesAgent {
   constructor() {
     this.apiKey = process.env.GEMINI_API_KEY;
     this.isValidKey = Boolean(this.apiKey && this.apiKey.trim().length > 10);
+    this.candidateModels = [
+      'gemini-3.6-flash',
+      'gemini-3.5-flash',
+      'gemini-3.5-flash-lite'
+    ];
   }
 
   getKnowledgeBase() {
@@ -55,13 +60,6 @@ REGLAS DE CONVERSACIÓN HUMANA:
   async callGeminiAPI(systemPrompt, history, userMessage) {
     if (!this.apiKey) return null;
 
-    const candidateModels = [
-      'gemini-3.5-flash-lite',
-      'gemini-3.1-flash-lite',
-      'gemini-3.5-flash',
-      'gemini-3.6-flash'
-    ];
-
     const contents = history.map(item => ({
       role: item.role === 'user' ? 'user' : 'model',
       parts: [{ text: item.content }]
@@ -78,7 +76,7 @@ REGLAS DE CONVERSACIÓN HUMANA:
       contents: contents
     };
 
-    for (const modelName of candidateModels) {
+    for (const modelName of this.candidateModels) {
       try {
         const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${this.apiKey}`;
         const res = await fetch(url, {
