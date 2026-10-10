@@ -26,13 +26,13 @@ export class SalesAgent {
     return {};
   }
 
-  buildSystemPrompt(config) {
+  buildSystemPrompt(config, isPaid = false) {
     const emp = config.empleado_digital || {};
     const neg = config.negocio || {};
     const me = config.metodos_pago || {};
     const faqs = config.objeciones_y_faqs || {};
 
-    return `
+    let promptBase = `
 Tu nombre es: ${emp.nombre || 'DJ Bonsai'} (DJ & Creador del Proyecto Construyendo Millones).
 Tu reto personal: ${emp.historia_reto || 'Pasar de 0 a 100 millones en 365 días y donar el 20% a personas de bajos recursos.'}
 Canal oficial TikTok para generar confianza: ${emp.tiktok_url || 'https://www.tiktok.com/@jeffer.1997?_r=1&_t=ZS-9AKsEsdr3uG'}
@@ -74,9 +74,22 @@ REGLAS DE RAZONAMIENTO Y CONDUCTA:
 6. SI EL CLIENTE AGRADECE (ej. 'gracias', 'muchas gracias', 'vale gracias', 'mil gracias', 'excelente gracias'):
    - Responde de forma breve, atenta y totalmente neutra sin insistir en ventas ni pedir comprobantes (ej: '¡Con el mayor de los gustos! 🙏 Es un verdadero placer. ¡Cualquier cosa por aquí quedo a la orden! 🎧🔥').
 
-7. PROHIBICIÓN ABSOLUTA: JAMÁS menciones la palabra "cabaña" ni "desde mi cabaña".
-8. Mantén las respuestas fluidas, breves y al grano cuando el cliente esté listo para comprar.
-`.trim();
+7. PROHIBICIÓN ABSOLUTA DE AUDIOS FICTICIOS:
+   - JAMÁS le digas al cliente "imagina un audio" ni simules enlaces ficticios. Si el cliente pide demos o muestras, responde confirmando amablemente que los audios de muestra y el video ya se están enviando a este chat.
+
+8. PROHIBICIÓN ABSOLUTA: JAMÁS menciones la palabra "cabaña" ni "desde mi cabaña".
+9. Mantén las respuestas fluidas, breves y al grano cuando el cliente esté listo para comprar.
+`;
+
+    if (isPaid) {
+      promptBase += `
+
+REGLA ESPECIAL (ESTE CLIENTE YA COMPRÓ Y YA RECIBIÓ SU MÚSICA):
+- NUNCA le vuelvas a pedir comprobantes, pagos, transferencias ni datos de Nequi a este cliente.
+- Responde siempre con amabilidad, agradecimiento y atención servicial. Si pregunta algo sobre cómo descargar o usar su música, ayúdale con gusto.`;
+    }
+
+    return promptBase.trim();
   }
 
   async callGeminiAPI(systemPrompt, history, userMessage) {
@@ -120,6 +133,7 @@ REGLAS DE RAZONAMIENTO Y CONDUCTA:
     const config = getBusinessConfig();
     const rawLower = userMessage.toLowerCase().trim();
     const history = chatState.getHistory(jid);
+    const currentState = chatState.getChatState(jid);
 
     // 1. AGRADECIMIENTOS DIRECTOS Y CIERRES NEUTROS (CORRECCIÓN LIMPIA Y UNIVERSAL)
     const isThanksMessage = 
@@ -181,7 +195,7 @@ REGLAS DE RAZONAMIENTO Y CONDUCTA:
 
     // 4. RESPUESTAS CONTINUAS CON RAZONAMIENTO VÍA IA GEMINI (CON HISTORIAL COMPLETO)
     if (this.isValidKey) {
-      const systemPrompt = this.buildSystemPrompt(config);
+      const systemPrompt = this.buildSystemPrompt(config, currentState.isPaid);
       const aiReply = await this.callGeminiAPI(systemPrompt, history, userMessage);
       if (aiReply) {
         chatState.addMessage(jid, 'user', userMessage);
