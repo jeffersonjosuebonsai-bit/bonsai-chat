@@ -173,16 +173,14 @@ export async function connectWhatsApp(pairingPhoneNumber = null) {
 
         // CONTROL HUMANO DE PAUSA / ACTIVACIÓN Y DETECCIÓN DE INTERVENCIÓN DEL DJ
         if (fromMe) {
-          if (lowerCmd === '/pausa') {
+          if (lowerCmd === '/pausa' || lowerCmd === 'pausa' || lowerCmd === 'pausar') {
             chatState.setHumanActive(jid, true);
-            console.log(`⏸️ Bot pausado en ${jid} por comando /pausa`);
-            await sock.sendMessage(jid, { text: '⚙️ [Bonsai Chat]: Bot pausado para este chat. DJ Bonsai en persona tomará el control.' });
+            console.log(`⏸️ Bot pausado silenciosamente en ${jid} por comando manual del DJ.`);
             continue;
           }
-          if (lowerCmd === '/bot' || lowerCmd === '/activar') {
+          if (lowerCmd === '/bot' || lowerCmd === '/activar' || lowerCmd === 'bot' || lowerCmd === 'activar') {
             chatState.setHumanActive(jid, false);
-            console.log(`▶️ Bot reactivado en ${jid} por comando /bot`);
-            await sock.sendMessage(jid, { text: '⚙️ [Bonsai Chat]: Bot reactivado exitosamente.' });
+            console.log(`▶️ Bot reactivado silenciosamente en ${jid} por comando manual del DJ.`);
             continue;
           }
 
@@ -305,6 +303,7 @@ export async function connectWhatsApp(pairingPhoneNumber = null) {
 
         if (isImageMsg || isPaymentKeyword) {
           console.log(`📸 Comprobante de pago recibido de ${jid}. Entregando pack y regalos...`);
+          chatState.setPaid(jid, true);
           const config = getBusinessConfig();
           const entregaText = config.respuestas_rapidas.entrega;
           await sock.sendMessage(jid, { text: entregaText });
@@ -338,8 +337,27 @@ export async function connectWhatsApp(pairingPhoneNumber = null) {
           continue;
         }
 
-        // DEMOS DE AUDIO Y VIDEO
-        const isDemoKeyword = lowerTxt.includes('demo') || lowerTxt.includes('muestra') || lowerTxt.includes('escuchar') || lowerTxt.includes('probador') || lowerTxt.includes('audio') || lowerTxt.includes('video') || lowerTxt.includes('carpetas') || lowerTxt.includes('como viene');
+        // DEMOS DE AUDIO Y VIDEO CON NORMALIZACIÓN DE ACENTOS Y PALABRAS CLAVE AMPLIADAS
+        const cleanTxt = lowerTxt.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        const isDemoKeyword = 
+          cleanTxt.includes('demo') || 
+          cleanTxt.includes('muestra') || 
+          cleanTxt.includes('prueba') || 
+          cleanTxt.includes('probar') || 
+          cleanTxt.includes('ejemplo') || 
+          cleanTxt.includes('escuchar') || 
+          cleanTxt.includes('probador') || 
+          cleanTxt.includes('audio') || 
+          cleanTxt.includes('video') || 
+          cleanTxt.includes('carpeta') || 
+          cleanTxt.includes('como viene') || 
+          cleanTxt.includes('como suena') || 
+          cleanTxt.includes('como es') || 
+          cleanTxt.includes('demostracion') || 
+          cleanTxt.includes('ensename') || 
+          cleanTxt.includes('muestrame') || 
+          cleanTxt.includes('adelanto') || 
+          cleanTxt.includes('avance');
 
         if (isDemoKeyword) {
           const { audioFiles, videoDemo } = getMediaFiles();
