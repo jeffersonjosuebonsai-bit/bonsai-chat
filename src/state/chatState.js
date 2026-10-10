@@ -14,6 +14,7 @@ class ChatStateManager {
       this.chats.set(jid, {
         jid,
         isHumanActive: false,
+        isPaid: false,
         lastHumanIntervention: 0,
         history: []
       });
@@ -34,6 +35,12 @@ class ChatStateManager {
     state.isHumanActive = active;
     state.lastHumanIntervention = active ? Date.now() : 0;
     console.log(`📌 Estado para ${jid}: Bot ${active ? 'PAUSADO (Atendido por humano)' : 'ACTIVADO'}`);
+  }
+
+  setPaid(jid, paid = true) {
+    const state = this.getChatState(jid);
+    state.isPaid = paid;
+    console.log(`💰 Estado para ${jid}: COMPRA CONFIRMADA (isPaid = ${paid})`);
   }
 
   addMessage(jid, role, content) {
