@@ -29,6 +29,11 @@ export function getWhatsAppStatus() {
   };
 }
 
+/** Devuelve el socket activo para que el remarketing pueda enviar mensajes */
+export function getActiveSocket() {
+  return isWhatsAppConnected ? activeSocket : null;
+}
+
 const salesAgent = new SalesAgent();
 
 export async function connectWhatsApp(pairingPhoneNumber = null) {
@@ -113,6 +118,18 @@ export async function connectWhatsApp(pairingPhoneNumber = null) {
 
   const processedMsgIds = new Set();
 
+  // ── PROTECCIONES ANTI-ABUSO ───────────────────────────────────────────────
+  // Límite de mensajes por contacto: máximo 20 respuestas por hora
+  const msgCountPerJid = new Map(); // jid → { count, windowStart }
+  const MAX_MSGS_PER_HOUR = 20;
+
+  // Anti-bucle bot-vs-bot: si un jid responde muy rápido muchas veces seguidas
+  // (< 8 segundos entre mensajes), lo detectamos como bot y lo silenciamos.
+  const rapidMsgTracker = new Map(); // jid → { lastMsgTs, rapidCount }
+  const RAPID_MSG_THRESHOLD_MS = 8000; // menos de 8 seg entre mensajes = sospechoso
+  const RAPID_MSG_MAX = 5;           // 5 ráfagas seguidas = es un bot, silenciar
+  // ─────────────────────────────────────────────────────────────────────────
+
   sock.ev.on('messages.upsert', async (m) => {
     if (m.type !== 'notify') return;
 
@@ -162,7 +179,9 @@ export async function connectWhatsApp(pairingPhoneNumber = null) {
         ).trim();
 
         const isAudioMsg = !!realMessage.audioMessage;
-        const isImageMsg = !!realMessage.imageMessage || !!realMessage.documentMessage;
+        // isImageMsg solo aplica a mensajes ENTRANTES (no fromMe).
+        // Si YO envío fotos desde el celular (fromMe=true), NO debe activar la entrega.
+        const isImageMsg = !fromMe && (!!realMessage.imageMessage || !!realMessage.documentMessage);
 
         // EVITAR BUCLE INFINITO: Si no hay texto, audio ni imagen, no procesar ni enviar respuestas
         if (!textMessage && !isAudioMsg && !isImageMsg) {
@@ -219,6 +238,51 @@ export async function connectWhatsApp(pairingPhoneNumber = null) {
           console.log(`⏸️ Omitiendo respuesta a ${jid}: Chat pausado por intervención humana.`);
           continue;
         }
+
+        // ── DETECTOR DE BUCLE BOT-VS-BOT ──────────────────────────────────────
+        // Si el contacto responde en menos de RAPID_MSG_THRESHOLD_MS repetidamente,
+        // lo marcamos como bot y pausamos el chat automáticamente.
+        const nowMs = Date.now();
+        if (!rapidMsgTracker.has(jid)) {
+          rapidMsgTracker.set(jid, { lastMsgTs: nowMs, rapidCount: 0 });
+        }
+        const rapid = rapidMsgTracker.get(jid);
+        const timeSinceLast = nowMs - rapid.lastMsgTs;
+        rapid.lastMsgTs = nowMs;
+        if (timeSinceLast < RAPID_MSG_THRESHOLD_MS) {
+          rapid.rapidCount++;
+          if (rapid.rapidCount >= RAPID_MSG_MAX) {
+            chatState.setHumanActive(jid, true);
+            console.log(`🛑 [ANTI-BUCLE] Bot externo detectado en ${jid} (${rapid.rapidCount} msgs rápidos). Chat silenciado 1 hora.`);
+            rapid.rapidCount = 0;
+            continue;
+          }
+        } else {
+          // Reiniciar contador si hubo pausa suficiente
+          rapid.rapidCount = Math.max(0, rapid.rapidCount - 1);
+        }
+        // ── FIN DETECTOR BOT ──────────────────────────────────────────────────
+
+        // ── RATE LIMITER: máximo MAX_MSGS_PER_HOUR respuestas por contacto/hora ─
+        const windowMs = 60 * 60 * 1000; // 1 hora
+        if (!msgCountPerJid.has(jid)) {
+          msgCountPerJid.set(jid, { count: 0, windowStart: nowMs });
+        }
+        const rateEntry = msgCountPerJid.get(jid);
+        if (nowMs - rateEntry.windowStart > windowMs) {
+          // Nueva ventana horaria
+          rateEntry.count = 0;
+          rateEntry.windowStart = nowMs;
+        }
+        rateEntry.count++;
+        if (rateEntry.count > MAX_MSGS_PER_HOUR) {
+          console.log(`⚠️ [RATE LIMIT] ${jid} superó ${MAX_MSGS_PER_HOUR} mensajes/hora. Ignorando.`);
+          continue;
+        }
+        // ── FIN RATE LIMITER ──────────────────────────────────────────────────
+
+        // Registrar timestamp del mensaje entrante para el motor de remarketing
+        chatState.updateLastIncoming(jid);
 
         function getAudioConfig(filePath) {
           const lower = filePath.toLowerCase();
@@ -308,6 +372,7 @@ export async function connectWhatsApp(pairingPhoneNumber = null) {
           const config = getBusinessConfig();
           const entregaText = config.respuestas_rapidas.entrega;
           await sock.sendMessage(jid, { text: entregaText });
+          chatState.markPurchased(jid); // ← marcar compra: remarketing ya no aplica
           await new Promise(r => setTimeout(r, 1500));
 
           const { agradecimientoImg, tutorialVideo } = getMediaFiles();
@@ -338,23 +403,8 @@ export async function connectWhatsApp(pairingPhoneNumber = null) {
           continue;
         }
 
-        // DEMOS DE AUDIO Y VIDEO (CON PALABRAS CLAVE ADICIONALES: demostración, prueba, ejemplo)
-        const isDemoKeyword = 
-          lowerTxt.includes('demo') || 
-          lowerTxt.includes('muestra') || 
-          lowerTxt.includes('escuchar') || 
-          lowerTxt.includes('probador') || 
-          lowerTxt.includes('audio') || 
-          lowerTxt.includes('video') || 
-          lowerTxt.includes('carpetas') || 
-          lowerTxt.includes('como viene') ||
-          lowerTxt.includes('demostración') ||
-          lowerTxt.includes('demostracion') ||
-          lowerTxt.includes('prueba') ||
-          lowerTxt.includes('pruebas') ||
-          lowerTxt.includes('probar') ||
-          lowerTxt.includes('ejemplo') ||
-          lowerTxt.includes('ejemplos');
+        // DEMOS DE AUDIO Y VIDEO
+        const isDemoKeyword = lowerTxt.includes('demo') || lowerTxt.includes('muestra') || lowerTxt.includes('escuchar') || lowerTxt.includes('probador') || lowerTxt.includes('audio') || lowerTxt.includes('video') || lowerTxt.includes('carpetas') || lowerTxt.includes('como viene');
 
         if (isDemoKeyword) {
           const { audioFiles, videoDemo } = getMediaFiles();
@@ -420,7 +470,7 @@ export async function connectWhatsApp(pairingPhoneNumber = null) {
   return sock;
 }
 
-export function requestWhatsAppPairingCode(phoneNumber) {
+export async function requestWhatsAppPairingCode(phoneNumber) {
   if (!phoneNumber) throw new Error('Se requiere número de teléfono (ej. 573104531477)');
   const cleanPhone = phoneNumber.replace(/[^0-9]/g, '');
 
@@ -431,6 +481,7 @@ export function requestWhatsAppPairingCode(phoneNumber) {
     } catch (e) {}
     activeSocket = null;
   }
+  await new Promise(r => setTimeout(r, 500));
 
   const authFolder = path.join(process.cwd(), 'baileys_auth');
   if (fs.existsSync(authFolder)) {
@@ -442,10 +493,11 @@ export function requestWhatsAppPairingCode(phoneNumber) {
   isWhatsAppConnected = false;
   isInitializing = false;
 
-  return connectWhatsApp(cleanPhone);
+  await connectWhatsApp(cleanPhone);
+  return { success: true, pairingCode: latestPairingCode };
 }
 
-export function resetWhatsAppSession() {
+export async function resetWhatsAppSession() {
   console.log('🔄 Reiniciando sesión de Baileys y limpiando credenciales...');
   isWhatsAppConnected = false;
   isInitializing = false;
@@ -459,6 +511,7 @@ export function resetWhatsAppSession() {
     } catch (e) {}
     activeSocket = null;
   }
+  await new Promise(r => setTimeout(r, 500));
 
   const authFolder = path.join(process.cwd(), 'baileys_auth');
   if (fs.existsSync(authFolder)) {
