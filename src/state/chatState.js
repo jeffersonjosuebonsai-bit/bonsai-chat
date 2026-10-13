@@ -14,9 +14,13 @@ class ChatStateManager {
       this.chats.set(jid, {
         jid,
         isHumanActive: false,
-        isPaid: false,
         lastHumanIntervention: 0,
-        history: []
+        history: [],
+        // ── Remarketing tracking ───────────────────────────────────────────
+        lastIncomingMessageAt: 0,  // timestamp del último mensaje del cliente
+        hasPurchased: false,        // true si el bot ya entregó el pack
+        remarketingSent: false      // garantiza máximo 1 mensaje de remarketing
+        // ──────────────────────────────────────────────────────────────────
       });
     }
     const state = this.chats.get(jid);
@@ -35,12 +39,6 @@ class ChatStateManager {
     state.isHumanActive = active;
     state.lastHumanIntervention = active ? Date.now() : 0;
     console.log(`📌 Estado para ${jid}: Bot ${active ? 'PAUSADO (Atendido por humano)' : 'ACTIVADO'}`);
-  }
-
-  setPaid(jid, paid = true) {
-    const state = this.getChatState(jid);
-    state.isPaid = paid;
-    console.log(`💰 Estado para ${jid}: COMPRA CONFIRMADA (isPaid = ${paid})`);
   }
 
   addMessage(jid, role, content) {
@@ -65,6 +63,24 @@ class ChatStateManager {
     const state = this.getChatState(jid);
     state.history = [];
   }
+
+  // ── Métodos de remarketing ────────────────────────────────────────────────
+  updateLastIncoming(jid) {
+    const state = this.getChatState(jid);
+    state.lastIncomingMessageAt = Date.now();
+  }
+
+  markPurchased(jid) {
+    const state = this.getChatState(jid);
+    state.hasPurchased = true;
+    state.remarketingSent = true; // si ya compró, nunca enviar remarketing
+    console.log(`💳 Compra registrada para ${jid}. Remarketing deshabilitado.`);
+  }
+
+  getAllChats() {
+    return Array.from(this.chats.values());
+  }
+  // ─────────────────────────────────────────────────────────────────────────
 }
 
 export const chatState = new ChatStateManager();
