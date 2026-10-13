@@ -1,6 +1,7 @@
-import { connectWhatsApp } from './whatsapp/client.js';
+import { connectWhatsApp, getActiveSocket } from './whatsapp/client.js';
 import { startServer } from './server.js';
 import { getBusinessConfig } from './config.js';
+import { startRemarketingJob } from './remarketing/remarketingJob.js';
 
 // Protección global de proceso contra fallos inesperados de Puppeteer / red
 process.on('unhandledRejection', (reason, promise) => {
@@ -30,3 +31,7 @@ startServer();
 connectWhatsApp().catch(err => {
   console.error('❌ Error al iniciar conexión de WhatsApp:', err);
 });
+
+// Iniciar motor de remarketing (recuperación de leads)
+// Pasa getActiveSocket como getter para que siempre use el socket más reciente
+startRemarketingJob(getActiveSocket);
