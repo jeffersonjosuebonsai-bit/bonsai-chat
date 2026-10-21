@@ -296,45 +296,33 @@ export async function connectWhatsApp(pairingPhoneNumber = null) {
 
         function getMediaFiles() {
           const mediaDir = path.join(process.cwd(), 'media');
-          const demosDir = path.join(mediaDir, 'demos');
+          const video1Saludo = path.join(mediaDir, 'video_1_saludo.mp4');
+          const video2Tutorial = path.join(mediaDir, 'video_2_tutorial.mp4');
 
-          let video1Saludo = null;
-          let video2Tutorial = null;
-          let agradecimientoImg = null;
-
-          if (fs.existsSync(mediaDir)) {
-            fs.readdirSync(mediaDir).forEach(f => {
-              const fullPath = path.join(mediaDir, f);
-              if (fs.statSync(fullPath).isFile()) {
-                const lower = f.toLowerCase();
-                if (lower.includes('saludo') || lower.includes('video_1') || lower.includes('explicativo')) {
-                  video1Saludo = fullPath;
-                } else if (lower.includes('tutorial') || lower.includes('video_2') || lower.includes('demo')) {
-                  video2Tutorial = fullPath;
-                }
-              }
-            });
-          }
-
-          return { video1Saludo, video2Tutorial, agradecimientoImg };
+          return {
+            video1Saludo: fs.existsSync(video1Saludo) ? video1Saludo : null,
+            video2Tutorial: fs.existsSync(video2Tutorial) ? video2Tutorial : null
+          };
         }
 
         // DETECCIÓN DE NOTAS DE VOZ
         if (isAudioMsg) {
           console.log(`🎙️ Nota de voz recibida de ${jid}.`);
-          const voiceReply = "¡Hola! 🎧 Recibí tu nota de voz. Por este medio automático leo mensajes de texto. Si me escribes tu inquietud o palabras como 'info' o 'lo quiero', con mucho gusto te respondo de inmediato 🙌🔥";
+          const voiceReply = "¡Hola! 🎧 Recibí tu nota de voz. Por este medio automático leo mensajes de texto. Si me escribes tu inquietud o palabras como 'info' o el número de tu pack, con mucho gusto te respondo de inmediato 🙌🔥";
           await sock.sendMessage(jid, { text: voiceReply });
           continue;
         }
 
-        // 1. DETECCIÓN DE MENSAJE DE COMPRA DESDE LA WEB (SIN IMAGEN AÚN)
+        // 1. DETECCIÓN DE MENSAJE DE COMPRA DESDE LA WEB O NÚMERO (SIN IMAGEN AÚN)
         const detectedPack = detectPackFromText(textMessage);
         const lowerTxt = textMessage.toLowerCase();
+        const trimmedTxt = lowerTxt.trim().replace('.', '');
+        const isNumericChoice = ['1','2','3','4','5','6','7','8'].includes(trimmedTxt);
 
-        if (detectedPack && !isImageMsg && (lowerTxt.includes('transferir') || lowerTxt.includes('adquirir') || lowerTxt.includes('activar') || lowerTxt.includes('acceso completo') || lowerTxt.includes('promocion') || lowerTxt.includes('pack') || lowerTxt.includes('combo'))) {
-          console.log(`📦 Pedido detectado desde la web para ${jid}: ${detectedPack.name} (${detectedPack.key})`);
-          chatState.setPendingPack(jid, detectedPack.key, detectedPack.name);
-          const askCaptureReply = `¡Perfecto! 🔥 Solo falta que me envíes la foto o captura del comprobante de pago para entregarte de inmediato tus códigos de acceso oficial de por vida para el *${detectedPack.name}*.`;
+        if (detectedPack && !isImageMsg && (isNumericChoice || lowerTxt.includes('transferir') || lowerTxt.includes('adquirir') || lowerTxt.includes('activar') || lowerTxt.includes('acceso completo') || lowerTxt.includes('promocion') || lowerTxt.includes('pack') || lowerTxt.includes('combo'))) {
+          console.log(`📦 Pedido detectado para ${jid}: ${detectedPack.name} (${detectedPack.key})`);
+          chatState.setPendingPack(jid, detectedPack.key, detectedPack.name, detectedPack.subPacks || []);
+          const askCaptureReply = `¡Perfecto! 🔥 Solo falta que me envíes la foto o captura del comprobante de pago para entregarte de inmediato tu código de acceso oficial de por vida para el *${detectedPack.name}*.`;
           await sock.sendMessage(jid, { text: askCaptureReply });
           continue;
         }
@@ -349,18 +337,40 @@ export async function connectWhatsApp(pairingPhoneNumber = null) {
           if (packToDeliver) {
             const code = codeDispenser.getNextCode(packToDeliver.key, jid);
             if (code) {
+              let autoUrl = `https://bonsai-music-pool.vercel.app/?c=${code}`;
+              let specificPackNote = "";
+
+              if (packToDeliver.key === 'VIP') {
+                specificPackNote = "Toca el enlace y ve a la plataforma: ¡Absolutamente TODOS los packs de la plataforma han quedado 100% desbloqueados de por vida para ti!";
+              } else if (packToDeliver.key === 'DUO' || packToDeliver.key === 'TRIO') {
+                const subPacksList = packToDeliver.subPacks || [];
+                if (subPacksList.length > 0) {
+                  autoUrl += `&p=${subPacksList.join(',')}`;
+                  specificPackNote = `Toca el enlace y ve directamente a tus packs elegidos: ¡Ya están totalmente desbloqueados para que escuches todo y descargues tus canciones!`;
+                } else {
+                  specificPackNote = `Toca el enlace y ve a la plataforma para elegir tus packs de la promoción, ¡ya están listos para desbloquear!`;
+                }
+              } else {
+                specificPackNote = `Toca el enlace y ve directamente a tu *${packToDeliver.name}*: ¡Ya está totalmente desbloqueado para que puedas escuchar todas las canciones en vivo y descargar carpetas completas en limpio formato ZIP!`;
+              }
+
               const deliveryText = `¡Pago confirmado con éxito! 🎉🎧 Bienvenido a *Bonsai Music Pool*.
 
-Tu pack ya está listo para descarga:
+📦 *Tu compra:* ${packToDeliver.name}
 🔑 *Tu código de activación:* ${code}
-📲 *Enlace con auto-desbloqueo:* https://bonsai-music-pool.vercel.app/?c=${code}
 
-⚠️ *CONDICIONES DE ACCESO:*
+📲 *CÓMO INGRESAR Y DESCARGAR:*
+1️⃣ Toca tu enlace con auto-desbloqueo:
+👉 ${autoUrl}
+
+2️⃣ ${specificPackNote}
+
+⚠️ *CONDICIONES Y SEGURIDAD:*
 • Tu acceso es *vitalicio (de por vida)* para descargar cuando quieras.
-• Este código es personal y es válido para *máximo 2 dispositivos* (tu celular y tu computador/laptop de DJ).
-• Al ingresar al enlace, tu pack quedará desbloqueado automáticamente.
+• Código personal válido para *máximo 2 dispositivos* (por ejemplo, tu celular y tu computador).
+• Al ingresar desde tu navegador, la web limpia el código de la barra de direcciones para proteger tu acceso personal.
 
-¡A romper la pista con la mejor música! 🚀🔥`;
+¡A disfrutar de la mejor música con la máxima calidad! 🚀🔥`;
               await sock.sendMessage(jid, { text: deliveryText });
               chatState.markPurchased(jid);
               chatState.clearPendingPack(jid);
@@ -370,14 +380,21 @@ Tu pack ya está listo para descarga:
           }
 
           // Si mandó foto pero no sabemos qué pack pagó:
-          console.log(`⚠️ Comprobante sin pack identificado de ${jid}. Indicando que valide el pack desde la web...`);
+          console.log(`⚠️ Comprobante sin pack identificado de ${jid}. Solicitando número de pack o validación web...`);
           const redirectMsg = `¡Comprobante recibido con éxito! 🎉👏
 
-Para entregarte de inmediato tu código exacto de activación:
-👉 Ingresa a nuestra web oficial: https://bonsai-music-pool.vercel.app
-👉 Toca el botón de tu pack o combo y dale a *"Notificar Pago por WhatsApp"*.
+Para entregarte de inmediato tu código exacto de activación, indícame cuál pack o combo compraste (puedes responder simplemente con el número):
 
-Así nuestro sistema detecta tu orden automáticamente y te libera tu código de por vida al instante. 🎧🔥`;
+1️⃣ Pack Samples & Efectos DJ ($5.000 COP)
+2️⃣ Pack Decembrino 2026 ($10.000 COP)
+3️⃣ Pack 1000 Videos Remix ($10.000 COP)
+4️⃣ Pack Crossover Originales & Extended ($10.000 COP)
+5️⃣ Pack Halloween 2026 ($10.000 COP)
+6️⃣ Combo Dúo (2 Packs a elección) ($15.000 COP)
+7️⃣ Combo Trío (3 Packs a elección) ($20.000 COP)
+8️⃣ Mega Combo VIP (Todos los packs completos) ($35.000 COP)
+
+O si compraste directamente en nuestra web, ingresa a https://bonsai-music-pool.vercel.app y toca *"Notificar Pago por WhatsApp"* en tu pack. 🎧🔥`;
           await sock.sendMessage(jid, { text: redirectMsg });
           continue;
         }

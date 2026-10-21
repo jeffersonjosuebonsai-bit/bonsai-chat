@@ -67,9 +67,9 @@ class ChatStateManager {
   }
 
   // ── Gestión de Pack Pendiente ─────────────────────────────────────────────
-  setPendingPack(jid, key, name = '') {
+  setPendingPack(jid, key, name = '', subPacks = []) {
     const state = this.getChatState(jid);
-    state.pendingPack = { key, name, setAt: Date.now() };
+    state.pendingPack = { key, name, subPacks, setAt: Date.now() };
     console.log(`📦 [chatState] Pack pendiente para ${jid}: ${key} (${name})`);
   }
 

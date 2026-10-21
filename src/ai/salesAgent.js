@@ -32,33 +32,35 @@ export class SalesAgent {
 
     return `
 Tu nombre es: ${emp.nombre} (DJ Bonsai).
-Ocupación: DJ profesional de discotecas, clubes y eventos, creador de la plataforma oficial Bonsai Music Pool.
+Ocupación: DJ profesional, creador de la plataforma oficial Bonsai Music Pool.
 Tono de voz: Amigable, respetuoso, con energía de DJ colombiano, educado, seguro y 100% transparente.
+
+PÚBLICO Y USOS DE NUESTRA MÚSICA:
+- Sirve tanto para DJs profesionales y discotecas (versiones Extended con intro y outro, BPM y sin sellos ni pisadores), como para cualquier persona, negocio, gimnasio, carro o fiestas en casa que quiera disfrutar de la mejor música limpia en 320 Kbps sin marcas ni anuncios molestos.
 
 INFORMACIÓN DE LA PLATAFORMA (BONSAI MUSIC POOL):
 - Web oficial con reproductor en vivo: ${neg.web_oficial}
 - En la web, el cliente puede escuchar todas las canciones completas en vivo sin sellos en 320 Kbps, ver la cantidad de carpetas y el peso exacto en Gigas de cada pack antes de comprar.
 - La compra se hace directamente seleccionando el pack en la web y dando al botón "Notificar Pago por WhatsApp".
 
-CATÁLOGO Y PRECIOS:
-1. Pack Decembrino 2026: $10.000 COP (Parranderos, fin de año, salsa de fiesta, cumbias).
-2. Pack 1000 Videos Remix: $10.000 COP (Videos Full HD para pantallas de discotecas y bares).
-3. Pack Crossover Originales & Remix: $10.000 COP (Reggaetón, Salsa, Bachata, Vallenato, Merengue).
-4. Pack Halloween 2026: $10.000 COP (Temático rumbero).
-5. Pack Samples & Efectos DJ: $5.000 COP (Samples, redobles, sirenas, transiciones).
-COMBOS ESPECIALES:
-- Combo Dúo (2 Packs a elección): $15.000 COP
-- Combo Trío (3 Packs a elección): $20.000 COP
-- Mega Combo VIP (Todos los packs incluidos): $35.000 COP
+CATÁLOGO OFICIAL Y PRECIOS (SIEMPRE ENUMERA DEL 1 AL 8 AL DAR INFORMACIÓN O PRECIOS):
+1️⃣ Pack Samples & Efectos DJ: $5.000 COP (Samples, redobles, sirenas, transiciones).
+2️⃣ Pack Decembrino 2026: $10.000 COP (Parranderos, fin de año, salsa de fiesta, cumbias).
+3️⃣ Pack 1000 Videos Remix: $10.000 COP (Videos Full HD para pantallas de discotecas, bares o salas).
+4️⃣ Pack Crossover Originales & Remix: $10.000 COP (Reggaetón, Salsa, Bachata, Vallenato, Merengue).
+5️⃣ Pack Halloween 2026: $10.000 COP (Temático rumbero).
+6️⃣ Combo Dúo (2 Packs a elección): $15.000 COP (Elige 2 packs a tu gusto).
+7️⃣ Combo Trío (3 Packs a elección): $20.000 COP (Elige 3 packs a tu gusto).
+8️⃣ Mega Combo VIP (Todos los packs incluidos): $35.000 COP (Acceso total vitalicio).
 
 CONDICIONES DE SEGURIDAD Y ACCESO:
 - Pago: Únicamente a Nequi o por llave Bre-B al 3104531477 a nombre de Jefferson Josué Silva Santafé.
-- Entrega: Al enviar el comprobante, el bot entrega un Código Criptográfico Único y un enlace de auto-desbloqueo.
-- Dispositivos: Máximo 2 dispositivos por código (celular y computador de DJ).
+- Entrega: Al enviar el comprobante, el bot entrega un Código Criptográfico Único y las instrucciones de auto-desbloqueo.
+- Dispositivos: Máximo 2 dispositivos por código (por ejemplo, celular y computador).
 - Duración: Acceso vitalicio de por vida, sin límite de tiempo ni mensualidades.
 
 DISTINCIÓN VITAL:
-1. Si preguntan si la música sirve para DJs: Sí, música en 320 Kbps sin marcas ni sellos, versiones Originales y Extended con BPM.
+1. Si preguntan para quién sirve: Explicar que sirve tanto para DJs y discotecas como para escuchar en la casa, gimnasio, negocio, carro o fiestas familiares con amigos.
 2. Si preguntan por CONTRATAR a DJ Bonsai para un evento presencial (fiesta, 15 años, boda, discoteca, cuánto cobras por tocar): Responder que sí realiza presentaciones presenciales, preguntar fecha y ciudad, y avisarle que DJ Bonsai en persona le responderá por este chat.
 `.trim();
   }
@@ -155,7 +157,7 @@ DISTINCIÓN VITAL:
       lower.includes('rekordbox');
 
     if (isMusicForDj) {
-      const reply = "¡Totalmente hermano! Diseñado 100% por y para DJs. Toda la música viene en alta fidelidad a 320 Kbps, completamente limpia, sin sellos, sin pisadores ni marcas de voz. Trae versiones Originales y Extended organizadas por carpetas de géneros con BPM para mezclar en Virtual DJ, Serato o Rekordbox. Puedes escuchar las canciones completas en vivo antes de comprar aquí: https://bonsai-music-pool.vercel.app 🎧🔥";
+      const reply = "¡Sirve para todos! Está pensado tanto para DJs profesionales y discotecas (con versiones Extended con intro y outro para mezclar en Virtual DJ, Serato o Rekordbox sin sellos ni pisadores), como para cualquier persona o negocio que quiera disfrutar la mejor música en casa, en el carro, en el gimnasio o en sus fiestas con versiones Originales limpias y en máxima calidad 320 Kbps sin marcas ni comerciales. Puedes escuchar las canciones completas en vivo antes de comprar aquí: https://bonsai-music-pool.vercel.app 🎧🔥";
       chatState.addMessage(jid, 'user', userMessage);
       chatState.addMessage(jid, 'assistant', reply);
       return reply;
@@ -253,7 +255,26 @@ DISTINCIÓN VITAL:
       lower.includes('dame los datos');
 
     if (isExplicitPaymentRequest) {
-      const pagoReply = `¡Excelente decisión! 💳 Puedes transferir por Nequi o por llave Bre-B:\n\n📲 Nequi: ${config.metodos_pago.nequi}\n🔑 Llave Bre-B: ${config.metodos_pago.llave_breb}\nTitular: ${config.metodos_pago.titular}\n\n🔥 PRECIOS:\n• Packs individuales: $10.000 COP c/u (Samples $5.000)\n• Combo Dúo (2 Packs): $15.000 COP\n• Combo Trío (3 Packs): $20.000 COP\n• Mega Combo VIP (Todos): $35.000 COP\n\nTambién puedes seleccionar tu pack directamente en nuestra web https://bonsai-music-pool.vercel.app y darle a 'Notificar Pago'. Envíame la captura de tu comprobante y de inmediato te entrego tu código de activación vitalicio para 2 dispositivos 🙌🎧`;
+      const pagoReply = `¡Excelente decisión! 💳 Puedes transferir por Nequi o por llave Bre-B:
+
+📲 Nequi: ${config.metodos_pago.nequi}
+🔑 Llave Bre-B: ${config.metodos_pago.llave_breb}
+Titular: ${config.metodos_pago.titular}
+
+🔥 MENÚ DE PACKS Y PRECIOS:
+1️⃣ Pack Samples & Efectos DJ ($5.000 COP)
+2️⃣ Pack Decembrino 2026 ($10.000 COP)
+3️⃣ Pack 1000 Videos Remix ($10.000 COP)
+4️⃣ Pack Crossover Originales & Extended ($10.000 COP)
+5️⃣ Pack Halloween 2026 ($10.000 COP)
+6️⃣ Combo Dúo (2 Packs a elección) ($15.000 COP)
+7️⃣ Combo Trío (3 Packs a elección) ($20.000 COP)
+8️⃣ Mega Combo VIP (Todos los packs completos) ($35.000 COP)
+
+También puedes hacer tu compra directamente en nuestra web oficial:
+🌐 https://bonsai-music-pool.vercel.app
+
+Envíame el comprobante y el número o nombre de tu pack, y de inmediato te entrego tu código de activación vitalicio para tus 2 dispositivos 🙌🎧`;
       chatState.addMessage(jid, 'user', userMessage);
       chatState.addMessage(jid, 'assistant', pagoReply);
       return pagoReply;
