@@ -19,7 +19,9 @@ class ChatStateManager {
         // ── Remarketing tracking ───────────────────────────────────────────
         lastIncomingMessageAt: 0,  // timestamp del último mensaje del cliente
         hasPurchased: false,        // true si el bot ya entregó el pack
-        remarketingSent: false      // garantiza máximo 1 mensaje de remarketing
+        remarketingSent: false,     // garantiza máximo 1 mensaje de remarketing
+        // ── Estado de compra pendiente ────────────────────────────────────
+        pendingPack: null           // { key: 'DEC'|'VIP'|..., name: '...', setAt: timestamp }
         // ──────────────────────────────────────────────────────────────────
       });
     }
@@ -63,6 +65,24 @@ class ChatStateManager {
     const state = this.getChatState(jid);
     state.history = [];
   }
+
+  // ── Gestión de Pack Pendiente ─────────────────────────────────────────────
+  setPendingPack(jid, key, name = '') {
+    const state = this.getChatState(jid);
+    state.pendingPack = { key, name, setAt: Date.now() };
+    console.log(`📦 [chatState] Pack pendiente para ${jid}: ${key} (${name})`);
+  }
+
+  getPendingPack(jid) {
+    const state = this.getChatState(jid);
+    return state.pendingPack;
+  }
+
+  clearPendingPack(jid) {
+    const state = this.getChatState(jid);
+    state.pendingPack = null;
+  }
+  // ──────────────────────────────────────────────────────────────────────────
 
   // ── Métodos de remarketing ────────────────────────────────────────────────
   updateLastIncoming(jid) {

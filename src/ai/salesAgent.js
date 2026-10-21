@@ -32,28 +32,34 @@ export class SalesAgent {
 
     return `
 Tu nombre es: ${emp.nombre} (DJ Bonsai).
-Tu proyecto personal: ${emp.historia_reto}.
-Tono de voz: Atento, muy humano, conversacional, respetuoso, educado y transparente. Tratas a los clientes con cercanía colombiana profesional.
+Ocupación: DJ profesional de discotecas, clubes y eventos, creador de la plataforma oficial Bonsai Music Pool.
+Tono de voz: Amigable, respetuoso, con energía de DJ colombiano, educado, seguro y 100% transparente.
 
-INFORMACIÓN DEL PRODUCTO:
-- Producto: PACK DE MÚSICA COMPLETO CONSTRUYENDO MILLONES Vol-1 + REGALO 2 TERABYTES (PROMO 2x1 por $9.900 COP).
-- Contenido: Más de 60 carpetas organizadas con más de 10.000 canciones (Reggaetón, Salsa, Vallenato, Merengue, Bachata, Norteña, Parranda de diciembre, Gym, Infantil, Relajante, etc.).
-- Versiones: Extended y Originales mezcladas, totalmente LIMPIAS y SIN PISADORES (sin marcas de voz).
-- Entrega: Enlaces a la nube de Google Drive enviados directamente por WhatsApp tras confirmar el pago + Video tutorial de descarga de menos de 1 min.
-- Pago: ÚNICAMENTE a Nequi o por llave (Bre-B) al 3104531477 a nombre de Jeff** Sil***. Único medio de pago disponible: Nequi. Si el cliente pregunta por Daviplata u otros bancos, aclaras que pueden transferir a Nequi desde cualquier banco usando la llave (Bre-B).
+INFORMACIÓN DE LA PLATAFORMA (BONSAI MUSIC POOL):
+- Web oficial con reproductor en vivo: ${neg.web_oficial}
+- En la web, el cliente puede escuchar todas las canciones completas en vivo sin sellos en 320 Kbps, ver la cantidad de carpetas y el peso exacto en Gigas de cada pack antes de comprar.
+- La compra se hace directamente seleccionando el pack en la web y dando al botón "Notificar Pago por WhatsApp".
 
-REGLAS DE CONVERSACIÓN HUMANA:
-1. SI TE PREGUNTAN SI PUEDES VENDER SOLO UN GÉNERO O SOLO UNA CARPETA (ej. solo Norteña, solo Salsa, etc.):
-   Explica con total amabilidad y honestidad: "Con total sinceridad, el pack viene completo con las 60 carpetas por los mismos $9.900 COP. No vendemos carpetas sueltas, ¡pero no te preocupes! Tú solo descargas a tu celular, PC o USB las carpetas que más te gusten (como la de Norteña). El resto de carpetas se quedan guardadas en la nube de Google Drive sin ocuparte absolutamente nada de espacio en tu almacenamiento. Así aprovechas todo el contenido al mismo precio."
+CATÁLOGO Y PRECIOS:
+1. Pack Decembrino 2026: $10.000 COP (Parranderos, fin de año, salsa de fiesta, cumbias).
+2. Pack 1000 Videos Remix: $10.000 COP (Videos Full HD para pantallas de discotecas y bares).
+3. Pack Crossover Originales & Remix: $10.000 COP (Reggaetón, Salsa, Bachata, Vallenato, Merengue).
+4. Pack Halloween 2026: $10.000 COP (Temático rumbero).
+5. Pack Samples & Efectos DJ: $5.000 COP (Samples, redobles, sirenas, transiciones).
+COMBOS ESPECIALES:
+- Combo Dúo (2 Packs a elección): $15.000 COP
+- Combo Trío (3 Packs a elección): $20.000 COP
+- Mega Combo VIP (Todos los packs incluidos): $35.000 COP
 
-2. SI DICEN "LO QUIERO", "CÓMO LO COMPRO", "QUIERO LA PROMO", O PIDEN EL NEQUI:
-   Responde con entusiasmo de vendedor humano: "¡Excelente decisión! 👏🔥 El proceso es super fácil y rápido: realizas la transferencia de los $9.900 COP a Nequi o por Llave (Bre-B) al 3104531477 a nombre de Jeff** Sil***, me envías la captura o comprobante por aquí y de inmediato te comparto todos tus links de descarga y tus regalos."
+CONDICIONES DE SEGURIDAD Y ACCESO:
+- Pago: Únicamente a Nequi o por llave Bre-B al 3104531477 a nombre de Jefferson Josué Silva Santafé.
+- Entrega: Al enviar el comprobante, el bot entrega un Código Criptográfico Único y un enlace de auto-desbloqueo.
+- Dispositivos: Máximo 2 dispositivos por código (celular y computador de DJ).
+- Duración: Acceso vitalicio de por vida, sin límite de tiempo ni mensualidades.
 
-3. REGLAS FUNDAMENTALES Y PROHIBICIONES:
-   - PROHIBICIÓN ABSOLUTA: JAMÁS menciones la palabra "cabaña", "desde mi cabaña" ni "a la cabaña" al finalizar respuestas o dar datos de pago. Cierra de forma 100% humana y limpia (ej: "Quedo atento a tu comprobante para enviarte todo de una vez 🙌🔥").
-   - Sé variado y dinámico en cada respuesta. JAMÁS repitas el mismo texto de relleno ni saludes de nuevo si la conversación ya está iniciada.
-   - NUNCA compartas enlaces de descarga antes de recibir el comprobante de pago.
-   - Responde de forma precisa a lo que el cliente pregunte en el momento.
+DISTINCIÓN VITAL:
+1. Si preguntan si la música sirve para DJs: Sí, música en 320 Kbps sin marcas ni sellos, versiones Originales y Extended con BPM.
+2. Si preguntan por CONTRATAR a DJ Bonsai para un evento presencial (fiesta, 15 años, boda, discoteca, cuánto cobras por tocar): Responder que sí realiza presentaciones presenciales, preguntar fecha y ciudad, y avisarle que DJ Bonsai en persona le responderá por este chat.
 `.trim();
   }
 
@@ -110,26 +116,90 @@ REGLAS DE CONVERSACIÓN HUMANA:
     // DETECCIÓN INTELIGENTE DE PREGUNTAS Y CONTROL DE FLUJO
     // -------------------------------------------------------------
 
-    // A. SOLICITUD DE UN SOLO GÉNERO O CARPETA INDIVIDUAL (ej. Solo Norteña, Solo Salsa, Solo una carpeta)
-    const isOnlyOneGenreRequest = 
-      lower.includes('solo norte') ||
-      lower.includes('solo salsa') ||
-      lower.includes('solo vallenato') ||
-      lower.includes('solo reggaeton') ||
-      lower.includes('solo una carpeta') ||
-      lower.includes('carpetas por separado') ||
-      lower.includes('vender solo') ||
-      lower.includes('vendes por separado') ||
-      lower.includes('comprar solo');
+    // 1. CONTRATACIÓN PRESENCIAL DE DJ BONSAI (Eventos, discotecas, fiestas privadas, bodas, 15 años)
+    const isDjBooking = 
+      lower.includes('contratar') ||
+      lower.includes('para una fiesta') ||
+      lower.includes('para un evento') ||
+      lower.includes('para una boda') ||
+      lower.includes('para unos 15') ||
+      lower.includes('cuanto cobras por tocar') ||
+      lower.includes('cuanto cobra por tocar') ||
+      lower.includes('servicio de dj') ||
+      lower.includes('tocas en vivo') ||
+      lower.includes('evento presencial') ||
+      lower.includes('tocar en discoteca') ||
+      lower.includes('tocar en bar');
 
-    if (isOnlyOneGenreRequest) {
-      const reply = "Con total sinceridad para hablarte claro: el pack viene completo con las 60 carpetas por los mismos $9.900 COP, no vendemos carpetas sueltas. ¡Pero no te preocupes! 😉 Tú solo descargas a tu celular, PC o USB las carpetas que más te gusten (como la de Norteña). Las demás se quedan guardadas en la nube sin ocuparte nada de espacio ni almacenamiento. Así disfrutas tu música preferida y aprovechas toda la promoción. 🎧🔥";
+    if (isDjBooking) {
+      const reply = "¡Claro que sí! Con mucho gusto. DJ Bonsai realiza presentaciones y eventos presenciales (bodas, 15 años, discotecas y eventos privados). Cuéntame: ¿para qué fecha y en qué ciudad sería tu evento? Ya mismo le dejo una notificación prioritaria a DJ Bonsai para que te responda personalmente por este chat. 🎧🔥";
       chatState.addMessage(jid, 'user', userMessage);
       chatState.addMessage(jid, 'assistant', reply);
       return reply;
     }
 
-    // B. SALUDO E INFORMACIÓN INICIAL MAESTRA (SI PIDE INFORMACIÓN O SALUDA)
+    // 2. MÚSICA PARA DJ / CALIDAD DE AUDIO / FORMATO LIMPIO
+    const isMusicForDj = 
+      lower.includes('sirve para dj') ||
+      lower.includes('musica para dj') ||
+      lower.includes('para mezclar') ||
+      lower.includes('extended') ||
+      lower.includes('originales') ||
+      lower.includes('pisadores') ||
+      lower.includes('sellos') ||
+      lower.includes('marcas de voz') ||
+      lower.includes('calidad') ||
+      lower.includes('kbps') ||
+      lower.includes('virtual dj') ||
+      lower.includes('serato') ||
+      lower.includes('rekordbox');
+
+    if (isMusicForDj) {
+      const reply = "¡Totalmente hermano! Diseñado 100% por y para DJs. Toda la música viene en alta fidelidad a 320 Kbps, completamente limpia, sin sellos, sin pisadores ni marcas de voz. Trae versiones Originales y Extended organizadas por carpetas de géneros con BPM para mezclar en Virtual DJ, Serato o Rekordbox. Puedes escuchar las canciones completas en vivo antes de comprar aquí: https://bonsai-music-pool.vercel.app 🎧🔥";
+      chatState.addMessage(jid, 'user', userMessage);
+      chatState.addMessage(jid, 'assistant', reply);
+      return reply;
+    }
+
+    // 3. MUESTRAS / DEMOS / ESCUCHAR MÚSICA
+    const isDemoQuery = 
+      lower.includes('demo') ||
+      lower.includes('muestra') ||
+      lower.includes('escuchar') ||
+      lower.includes('probador') ||
+      lower.includes('probar') ||
+      lower.includes('como viene') ||
+      lower.includes('cuantas canciones') ||
+      lower.includes('cuantas gigas') ||
+      lower.includes('cuanto pesa');
+
+    if (isDemoQuery) {
+      const reply = "¡Montamos un reproductor en vivo en nuestra web oficial para que escuches todo sin gastar la memoria de tu WhatsApp! 🚀\n\nEntra aquí:\n🌐 https://bonsai-music-pool.vercel.app\n\nPuedes darle play a cualquier canción completa en 320 Kbps sin marcas, ver cuántas carpetas tiene cada pack y cuántos Gigas pesa. ¡Escuchas exactamente lo que te vas a llevar!";
+      chatState.addMessage(jid, 'user', userMessage);
+      chatState.addMessage(jid, 'assistant', reply);
+      return reply;
+    }
+
+    // 4. CÓMO ABRIRLO EN EL COMPUTADOR / PC / LAPTOP
+    const isPcQuery = 
+      lower.includes('computador') ||
+      lower.includes('computadora') ||
+      lower.includes('en mi pc') ||
+      lower.includes('al pc') ||
+      lower.includes('laptop') ||
+      lower.includes('portatil') ||
+      lower.includes('como lo abro') ||
+      lower.includes('abrirlo en el pc') ||
+      lower.includes('abrirlo en mi computador');
+
+    if (isPcQuery) {
+      const reply = config.objeciones_y_faqs.como_abro_en_computador || "¡Es muy fácil y sencillo! 💻🎧\n1️⃣ Abres WhatsApp Web en tu computador.\n2️⃣ Desde ahí tocas el enlace directo que te entregaré tras tu compra (el cual ya incluye tu código y se auto-desbloquea de una vez), o entras a https://bonsai-music-pool.vercel.app e ingresas tu código de activación en la casilla del pack.\n3️⃣ ¡Listo! Tu plataforma quedará 100% desbloqueada en tu computador para descargar por carpetas o el pack completo en archivos ZIP limpios.";
+      chatState.addMessage(jid, 'user', userMessage);
+      chatState.addMessage(jid, 'assistant', reply);
+      return reply;
+    }
+
+    // 5. SALUDO E INFORMACIÓN INICIAL MAESTRA
     const isInfoOrGreeting = 
       lower.includes('hola') || 
       lower.includes('buenas') ||
@@ -142,10 +212,7 @@ REGLAS DE CONVERSACIÓN HUMANA:
       lower.includes('de que trata') ||
       lower.includes('puedo obtener') ||
       lower.includes('obtener informacion') ||
-      lower.includes('mas informacion sobre esto') ||
-      lower.includes('informacion sobre esto') ||
-      lower.includes('me das informacion') ||
-      lower.includes('me das mas informacion');
+      lower.includes('me das informacion');
 
     const isExplicitPaymentKeyword = 
       lower.includes('lo quiero') ||
@@ -170,7 +237,7 @@ REGLAS DE CONVERSACIÓN HUMANA:
       return config.respuestas_rapidas.saludo_e_info;
     }
 
-    // C. INTENCIÓN DIRECTA DE COMPRA O CÓMO COMPRAR ("Lo quiero", "Cómo lo compro", "Quiero la promoción", "Dame el Nequi")
+    // 5. INTENCIÓN DIRECTA DE COMPRA ("Lo quiero", "Cómo lo compro", "Dame el Nequi")
     const isExplicitPaymentRequest = isExplicitPaymentKeyword ||
       lower.includes('quiero la promo') ||
       lower.includes('quiero la promocion') ||
@@ -179,17 +246,14 @@ REGLAS DE CONVERSACIÓN HUMANA:
       lower.includes('daviplata') ||
       lower.includes('donde transfiero') ||
       lower.includes('donde consigno') ||
-      lower.includes('donde giro') ||
       lower.includes('dame el numero') ||
       lower.includes('a que numero') ||
       lower.includes('como es el pago') ||
       lower.includes('mandame los datos') ||
-      lower.includes('dame los datos') ||
-      lower.includes('quiero comprar ya') ||
-      lower.includes('quiero pagarlo');
+      lower.includes('dame los datos');
 
     if (isExplicitPaymentRequest) {
-      const pagoReply = `¡Excelente decisión! 👏🔥 Con mucho gusto. El proceso es muy sencillo: realizas la transferencia de los $9.900 COP a Nequi o por llave (Bre-B):\n\n📲 Nequi: ${config.metodos_pago.nequi}\n🔑 Llave (Bre-B): ${config.metodos_pago.llave_breb}\n\nNombre: ${config.metodos_pago.titular}\n\n(Tenemos únicamente Nequi; si tienes Daviplata o cualquier otro banco, me transfieres a Nequi por medio de la llave Bre-B).\n\nPor favor, envíame la captura o comprobante una vez realices el pago y de inmediato te entregaré el pack de música y todos tus regalos automáticamente 🙌🔥🎶`;
+      const pagoReply = `¡Excelente decisión! 💳 Puedes transferir por Nequi o por llave Bre-B:\n\n📲 Nequi: ${config.metodos_pago.nequi}\n🔑 Llave Bre-B: ${config.metodos_pago.llave_breb}\nTitular: ${config.metodos_pago.titular}\n\n🔥 PRECIOS:\n• Packs individuales: $10.000 COP c/u (Samples $5.000)\n• Combo Dúo (2 Packs): $15.000 COP\n• Combo Trío (3 Packs): $20.000 COP\n• Mega Combo VIP (Todos): $35.000 COP\n\nTambién puedes seleccionar tu pack directamente en nuestra web https://bonsai-music-pool.vercel.app y darle a 'Notificar Pago'. Envíame la captura de tu comprobante y de inmediato te entrego tu código de activación vitalicio para 2 dispositivos 🙌🎧`;
       chatState.addMessage(jid, 'user', userMessage);
       chatState.addMessage(jid, 'assistant', pagoReply);
       return pagoReply;
@@ -338,7 +402,6 @@ REGLAS DE CONVERSACIÓN HUMANA:
       const thanksReply = "¡Con el mayor de los gustos! 🙏 Es un verdadero placer ayudarte. Que disfrutes muchísimo tu música 🎧🔥 ¡Cualquier cosa quedo a la orden!";
       chatState.addMessage(jid, 'user', userMessage);
       chatState.addMessage(jid, 'assistant', thanksReply);
-      chatState.setHumanActive(jid, true);
       return thanksReply;
     }
 

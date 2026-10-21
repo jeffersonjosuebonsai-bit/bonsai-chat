@@ -2,60 +2,95 @@
   "linea_id": "linea_principal_djbonsai",
   "empleado_digital": {
     "nombre": "DJ Bonsai",
-    "cargo": "DJ & Creador del Proyecto Construyendo Millones",
-    "tono": "Amigable, apasionado de la música, transparente, humilde y seguro para recomendar la mejor música",
-    "historia_reto": "Este proyecto hace parte de mi reto personal: pasar de 0 a 100 millones de pesos en 365 días desde mi cabaña 🛖💰🔥 ¡El 20% del valor de este producto será donado a personas de bajos recursos! 🙏✅",
+    "cargo": "DJ Profesional & Creador de Bonsai Music Pool",
+    "tono": "Amigable, apasionado por la música, humilde, transparente, profesional de discoteca y club",
     "tiktok_url": "https://www.tiktok.com/@jeffer.1997?_r=1&_t=ZS-9AKsEsdr3uG"
   },
   "negocio": {
-    "nombre": "DJ Bonsai - Construyendo Millones Vol-1",
-    "descripcion": "Pack completo de música para fiestas, negocios, DJs o uso personal (carro, casa, gym).",
-    "moneda": "COP"
+    "nombre": "Bonsai Music Pool",
+    "descripcion": "Plataforma web oficial DJ Record Pool con música limpia en 320 Kbps sin marcas ni sellos para DJs, negocios y fiestas.",
+    "moneda": "COP",
+    "web_oficial": "https://bonsai-music-pool.vercel.app"
   },
   "catalogo": [
     {
-      "id": "pack-construyendo-millones-vol1",
-      "nombre": "PACK DE MÚSICA COMPLETO CONSTRUYENDO MILLONES Vol-1 + REGALO 2 TERABYTES (PROMO 2x1)",
-      "descripcion": "60 carpetas diferentes con más de 10.000 canciones (Reggaetón viejo y nuevo, Salsa, Bachata, Merengue, Vallenato, Gym, Infantil, Relajante, etc.) + Regalo Extra de 2 Terabytes en Libros, Videos y Música.",
-      "precio": 9900,
-      "links_entrega": [
-        "https://drive.google.com/drive/folders/16u5-NQePefZHNkLJBk8ViWSTZTsgtcQO?usp=sharing",
-        "https://drive.google.com/drive/folders/1lvNYEC-j6d8B9zEX5IYxbcaLRS11HGeb",
-        "https://drive.google.com/drive/u/0/folders/1A0-E8_OrhzSRDvjZai9A8Ine9pjPcL3T",
-        "https://docs.google.com/document/d/1HzdrL-SF6dRvppIDDx4OP3yXV5qGRSunjjZBrD3GCOU/edit?usp=sharing"
-      ],
-      "media_entrega": {
-        "imagen": "media/agradecimiento.jpg",
-        "video_tutorial": "media/tutorial.mp4"
-      }
+      "id": "pack-decembrino-2026",
+      "prefix": "DEC",
+      "nombre": "Pack Decembrino 2026",
+      "precio": 10000,
+      "descripcion": "Parranderos, bailables, salsa de fin de año, cumbias y fiesta colombiana en 320 Kbps."
+    },
+    {
+      "id": "pack-1000-videos-remix",
+      "prefix": "VID",
+      "nombre": "Pack 1000 Videos Remix",
+      "precio": 10000,
+      "descripcion": "1000 videos Full HD remezclados para pantallas de discotecas y bares."
+    },
+    {
+      "id": "pack-crossover-originales-extended",
+      "prefix": "CRO",
+      "nombre": "Pack Crossover Originales & Remix",
+      "precio": 10000,
+      "descripcion": "Reggaetón, Salsa, Bachata, Vallenato, Merengue en versiones Originales y Extended."
+    },
+    {
+      "id": "pack-halloween-2026",
+      "prefix": "HAL",
+      "nombre": "Pack Halloween 2026",
+      "precio": 10000,
+      "descripcion": "Especial temático para rumbas y eventos de Halloween."
+    },
+    {
+      "id": "pack-samples-efectos-dj",
+      "prefix": "SMP",
+      "nombre": "Pack Samples & Efectos DJ",
+      "precio": 5000,
+      "descripcion": "Samples, redobles, sirenas, transiciones y efectos para mezclas de DJ."
+    },
+    {
+      "id": "combo-duo",
+      "prefix": "DUO",
+      "nombre": "Combo Dúo (2 Packs a elección)",
+      "precio": 15000,
+      "descripcion": "Elige 2 packs completos por $15.000 COP."
+    },
+    {
+      "id": "combo-trio",
+      "prefix": "TRIO",
+      "nombre": "Combo Trío (3 Packs a elección)",
+      "precio": 20000,
+      "descripcion": "Elige 3 packs completos por $20.000 COP."
+    },
+    {
+      "id": "combo-vip",
+      "prefix": "VIP",
+      "nombre": "Mega Combo VIP (Todos los Packs)",
+      "precio": 35000,
+      "descripcion": "Acceso total a todos los packs de la plataforma por $35.000 COP."
     }
   ],
   "metodos_pago": {
     "nequi": "3104531477",
     "llave_breb": "3104531477",
-    "titular": "Jeff** Sil***",
-    "instrucciones": "Realizas la transferencia de $9.900 COP a Nequi o por llave (Bre-B). Envías la captura o comprobante a este chat y te enviaré la música y los regalos automáticamente."
+    "titular": "Jefferson Josué Silva Santafé",
+    "instrucciones": "Transfiere por Nequi o por Llave (Bre-B) al 3104531477. Envías la captura y se te entregará tu código de activación vitalicio para 2 dispositivos."
   },
   "links_negocio": {
-    "pack_principal": "https://drive.google.com/drive/folders/16u5-NQePefZHNkLJBk8ViWSTZTsgtcQO?usp=sharing",
-    "regalo_carpeta1": "https://drive.google.com/drive/folders/1lvNYEC-j6d8B9zEX5IYxbcaLRS11HGeb",
-    "regalo_carpeta2": "https://drive.google.com/drive/u/0/folders/1A0-E8_OrhzSRDvjZai9A8Ine9pjPcL3T",
-    "doc_2teras": "https://docs.google.com/document/d/1HzdrL-SF6dRvppIDDx4OP3yXV5qGRSunjjZBrD3GCOU/edit?usp=sharing",
-    "app_bonsaiplay": "https://dj-web-app-v2.vercel.app/",
+    "web_oficial": "https://bonsai-music-pool.vercel.app",
     "tiktok": "https://www.tiktok.com/@jeffer.1997?_r=1&_t=ZS-9AKsEsdr3uG"
   },
   "objeciones_y_faqs": {
-    "confianza_o_estafa": "¡Te entiendo perfectamente! Es normal dudar en internet. 🤝 Te doy 100% de tranquilidad:\n1️⃣ Este es mi proyecto real y transparente. Puedes verificar mi trabajo en todas mis redes oficiales buscando como **DJ Bonsai** en YouTube, Facebook e Instagram, y ver mis videos diarios en mi canal oficial de TikTok: https://www.tiktok.com/@jeffer.1997?_r=1&_t=ZS-9AKsEsdr3uG\n2️⃣ Este proyecto hace parte de mi reto personal (pasar de 0 a 100M en 365 días desde mi cabaña y donamos el 20% a personas de bajos recursos).\n3️⃣ Si lo prefieres, te envío primero muestras de audio y el video demostrativo de las 60 carpetas antes de que realices el pago. ¡La idea es construir confianza total! 🙌🔥",
-    "carranga_o_parrandera": "¡Claro que sí! Trae bastante música de fiesta colombiana, parranderos, bailables de diciembre, vallenatos y géneros tradicionales repartidos en las 60 carpetas para prender la rumba en cualquier parte.",
-    "promo_solo_por_hoy": "¡Sí! El día de hoy tengo habilitada la promoción especial de lanzamiento 2x1: compras el Pack Construyendo Millones y te entrego de regalo el acceso al segundo pack de 2 Terabytes completos + la App Bonsai Play por solo $9.900 COP.",
-    "regalo_extra": "El regalo extra por tu compra es nuestra aplicación exclusiva **Bonsai Play** 📱🎧 (el mezclador DJ online con radio 24/7 y mezcla automática). El enlace de acceso y descarga te llegará a este chat junto con tus packs de música inmediatamente después de realizar tu pago.",
-    "es_para_dj": "¡Totalmente! Viene música en dos versiones: algunas en versión Extended y otras en versión Original. Además son versiones completamente limpias y sin pisadores (sin marcas de voz de DJ), ideales tanto para DJs como para dueños de negocios (bares, cantinas, discotecas) o para escuchar en el carro, casa o gimnasio.",
-    "fecha_limite": "Tranquilo/a, los enlaces no tienen fecha límite de descarga. Puedes acceder y descargar hoy, mañana, en un mes o cuando tú quieras. Además, si actualizo el pack con nueva música o contenido, se te actualiza automáticamente. Lo único que debes hacer es conservar bien tus links de acceso. 💻🎧"
+    "confianza_o_estafa": "¡Te entiendo perfectamente! Es normal dudar al comprar por internet 🤝 Te doy 100% de tranquilidad:\n1️⃣ Soy DJ Bonsai, puedes ver mi trabajo diario tocando en vivo y mis videos en TikTok (@jeffer.1997) y en todas mis redes sociales.\n2️⃣ En nuestra web oficial (https://bonsai-music-pool.vercel.app) puedes escuchar las canciones completas en vivo antes de comprar para verificar la calidad 320 Kbps sin marcas.\n3️⃣ El pago es por Nequi oficial 3104531477 y la entrega del código es automática e inmediata.",
+    "es_para_dj": "¡Totalmente! Está diseñado por y para DJs. Toda la música viene en alta fidelidad a 320 Kbps, sin sellos, sin pisadores ni marcas de voz. Trae versiones Originales y Extended organizadas por géneros con BPM para que mezcles de una. Puedes entrar y escuchar las muestras en vivo aquí: https://bonsai-music-pool.vercel.app",
+    "servicio_dj_presencial": "¡Claro que sí! DJ Bonsai realiza presentaciones y eventos presenciales (bodas, 15 años, discotecas y eventos privados). Cuéntame: ¿para qué fecha y en qué ciudad sería tu evento? Ya mismo le dejo una notificación prioritaria a DJ Bonsai para que te responda personalmente por este chat.",
+    "cuantos_dispositivos": "Tu código de activación es personal y es válido para máximo 2 dispositivos (por ejemplo, tu teléfono personal y tu computador o laptop de DJ). El acceso es vitalicio y de por vida, sin límite de tiempo.",
+    "como_se_descarga": "Todo se descarga directamente desde nuestra página web https://bonsai-music-pool.vercel.app en archivos ZIP limpios, bien sea por carpetas individuales o el pack completo, listo para descomprimir en tu celular o PC.",
+    "como_abro_en_computador": "¡Es muy fácil y sencillo! 💻🎧\n1️⃣ Abres WhatsApp Web en tu computador.\n2️⃣ Desde ahí tocas el enlace directo que te entregaré tras tu compra (el cual ya incluye tu código y se auto-desbloquea de una vez), o entras a https://bonsai-music-pool.vercel.app e ingresas tu código de activación en la casilla del pack.\n3️⃣ ¡Listo! Tu plataforma quedará 100% desbloqueada en tu computador para descargar por carpetas o el pack completo en archivos ZIP limpios."
   },
   "respuestas_rapidas": {
-    "saludo_e_info": "Hola, mucho gusto, te habla DJ Bonsai 🎧 Gracias por escribir, estoy aquí para ayudarte con todo lo relacionado con nuestro pack de música.\n\nEste proyecto hace parte de mi reto personal: pasar de 0 a 100 millones de pesos en 365 días desde mi cabaña 🛖💰🔥\n🔥 EL 20% DE LO RECAUDADO SERÁ DONADO A PERSONAS DE BAJOS RECURSOS 🙏✅\n\nAquí encontrarás nuestro PACK DE MÚSICA COMPLETO CONSTRUYENDO MILLONES Vol-1, ideal tanto para DJs como para dueños de negocios (bares, cantinas, discotecas) o para escuchar en el carro, casa, trabajo o gym 🎧🔥\n\n📂 Más de 60 carpetas organizadas con más de 10.000 canciones por géneros musicales:\n🔥 Reggaetón (viejo y nuevo)\n💃 Salsa\n🥁 Merengue\n🎤 Vallenato\n❤️ Bachata\n⚡ Guaracha\n🏋️ Música para el Gym\n👶 Música infantil\n🧘 Música relajante\n🎄 Parranderos y bailables de diciembre\n\n🎶 Viene música en dos versiones: algunas en versión Extended y otras en versión Original.\n✨ Son versiones completamente limpias y sin pisadores (sin marcas de voz de DJ), perfectas para mezclar o para escuchar en cualquier lugar.\n\n💸 Precio del pack: $9.900 COP.\n🔥 PROMO DE HOY 2x1: Pagas un pack ($9.900 COP) y recibes DOS PACKS (Pack Construyendo Millones Vol-1 + Pack de 2 Terabytes de Música) + REGALO EXTRA: Nuestra aplicación Bonsai Play 📱🎧 (el mezclador DJ online con radio 24/7 y mezcla automática).\n\nSi tienes alguna duda o quieres adquirir el pack, escríbeme con confianza 🙌",
-    "como_se_entrega": "Claro, con mucho gusto! 📥 ¿Cómo recibes tu PACK de música?\n\n1️⃣ Realizas el pago de $9.900 COP\n2️⃣ Te envío los enlaces directos de descarga a mi nube de Google Drive directamente por WhatsApp (o a tu correo electrónico si lo prefieres) ☁️🔗\n3️⃣ Ingresas a los links y descargas todo el contenido 📂\n4️⃣ ¡Listo! Ya tienes toda la música organizada para usar 🎧🔥\n\n💻 ¿Cómo descargarlo en tu computador o celular?\n• En computadores: Puedes descargar por carpetas completas y varias a la vez, o canción por canción. (Si compras desde tu celular, puedes abrir WhatsApp Web en tu PC y abrir los mismos links).\n• En celulares: Algunos teléfonos permiten descargar por carpetas completas y otros canción por canción.\n\n⚡ Importante: Se recomienda descargar con buen internet (WiFi) por el tamaño del archivo. Te entrego acceso a mi nube para que descargues cuando quieras 🙌\nJunto con los links te enviaré un video tutorial de descarga de menos de un minuto explicando cómo descargar toda tu música 🎥🔥🎶🙏",
-    "pago": "Claro! 😊 Con mucho gusto te comparto los datos para realizar la transferencia a Nequi o por llave:\n\n📲 Nequi: 3104531477\n🔑 Llave (Bre-B): 3104531477\n\nNombre: Jeff** Sil***\n\n(Tenemos únicamente Nequi, pero si tienes Daviplata o cualquier otro banco nos puedes transferir a Nequi usando la llave Bre-B).\n\nPor favor, envíame la captura o comprobante una vez realices el pago y te enviaré tu música y tus regalos automáticamente 🙌🔥🎶",
-    "entrega": "🎧 🙏Gracias por tu compra 🙌\nAquí tienes tu link de descarga:\n🔗 https://drive.google.com/drive/folders/16u5-NQePefZHNkLJBk8ViWSTZTsgtcQO?usp=sharing\n\nREGALO EXTRA POR APOYAR ESTE PROYECTO 🙏🎁🔥\n\nhttps://drive.google.com/drive/folders/1lvNYEC-j6d8B9zEX5IYxbcaLRS11HGeb\n\nhttps://drive.google.com/drive/u/0/folders/1A0-E8_OrhzSRDvjZai9A8Ine9pjPcL3T\n\n📱 REGALO ADICIONAL - APP OFICIAL BONSAI PLAY 🎧🔥\n¡Prueba Bonsai Play! El mejor mezclador DJ online. Descarga la nueva App Oficial para Android. Gratuito, profesional y con mezcla automática. ¡Dale play a tu música!\n🔗 https://dj-web-app-v2.vercel.app/\n\n📥 ¿Cómo descargar?\nAbre el enlace\nDescarga todos los archivos\nGuarda la música en tu celular o PC\n⚠️ Importante:\nNecesitas conexión a internet para descargar. Te recomiendo hacerlo con WiFi para evitar consumo de datos.\n✅ Una vez descargados, podrás escuchar los audios sin internet cuando quieras.\nSi tienes alguna duda, escríbeme y te ayudo 🙌🔥\nYa te envio un video explicando el paso a paso en menos de un minuto 🎥🔥🎶🙏\n\nRegalo extra 🎁🎉 PACK 2: 2 Tera’s de Música video Libros y más … \n\nhttps://docs.google.com/document/d/1HzdrL-SF6dRvppIDDx4OP3yXV5qGRSunjjZBrD3GCOU/edit?usp=sharing"
+    "saludo_e_info": "¡Hola! Mucho gusto, te habla DJ Bonsai 🎧\nEn el siguiente video que te voy a enviar te explico en menos de un minuto cómo funciona nuestra plataforma y cómo adquieres nuestros packs.\n\nEn nuestra web oficial puedes:\n🎵 Escuchar todas las canciones en vivo antes de comprar (calidad 320 Kbps sin marcas ni sellos).\n📂 Ver la cantidad exacta de canciones y carpetas de cada género.\n💾 Ver el peso real de cada pack (cuántos Gigas ocupa en tu disco o memoria).\n\n🌐 https://bonsai-music-pool.vercel.app\n\nHaz tu compra directamente en nuestra web: seleccionas tu pack o combo favorito y desde el mismo botón de la página nos notificas tu pago para liberarte tu código de acceso al instante.",
+    "esperando_comprobante": "¡Perfecto! 🔥 Solo falta que me envíes la foto o captura del comprobante de pago para entregarte de inmediato tu código de acceso oficial de por vida para tu pack.",
+    "preguntar_cual_pack": "¡Comprobante recibido! 👏🎉\n\nPara entregarte de inmediato tu código exacto de activación:\n👉 Ingresa a nuestra web oficial: https://bonsai-music-pool.vercel.app\n👉 Toca el botón de tu pack o combo y dale a *'Notificar Pago por WhatsApp'*.\n\nAsí nuestro sistema detecta tu orden automáticamente y te libera tu código de por vida al instante. 🎧🔥"
   }
 }

@@ -13,6 +13,8 @@ import path from 'path';
 import { chatState } from '../state/chatState.js';
 import { SalesAgent } from '../ai/salesAgent.js';
 import { getBusinessConfig } from '../config.js';
+import { codeDispenser } from '../codeDispenser.js';
+import { detectPackFromText } from '../packDetector.js';
 
 let isWhatsAppConnected = false;
 let isInitializing = false;
@@ -296,63 +298,25 @@ export async function connectWhatsApp(pairingPhoneNumber = null) {
           const mediaDir = path.join(process.cwd(), 'media');
           const demosDir = path.join(mediaDir, 'demos');
 
-          let audioFiles = [];
-          let videoDemo = null;
-          let tutorialVideo = null;
+          let video1Saludo = null;
+          let video2Tutorial = null;
           let agradecimientoImg = null;
-          let allVideos = [];
 
-          // Revisar carpeta media principal
           if (fs.existsSync(mediaDir)) {
             fs.readdirSync(mediaDir).forEach(f => {
               const fullPath = path.join(mediaDir, f);
               if (fs.statSync(fullPath).isFile()) {
                 const lower = f.toLowerCase();
-                if (f.startsWith('agradecimiento') || lower.includes('agradecimiento') || lower.endsWith('.jpg') || lower.endsWith('.jpeg') || lower.endsWith('.png') || lower.endsWith('.webp')) {
-                  agradecimientoImg = fullPath;
-                } else if (f.startsWith('tutorial') || lower.includes('tutorial')) {
-                  tutorialVideo = fullPath;
-                } else if (f.startsWith('video_demo') || lower.includes('video_demo')) {
-                  videoDemo = fullPath;
-                } else if (lower.endsWith('.mp3') || lower.endsWith('.mpeg') || lower.endsWith('.ogg') || lower.endsWith('.opus') || lower.endsWith('.wav') || lower.endsWith('.m4a')) {
-                  audioFiles.push(fullPath);
-                } else if (lower.endsWith('.mp4') || lower.endsWith('.webm') || lower.endsWith('.mov')) {
-                  allVideos.push(fullPath);
+                if (lower.includes('saludo') || lower.includes('video_1') || lower.includes('explicativo')) {
+                  video1Saludo = fullPath;
+                } else if (lower.includes('tutorial') || lower.includes('video_2') || lower.includes('demo')) {
+                  video2Tutorial = fullPath;
                 }
               }
             });
           }
 
-          // Revisar carpeta demos
-          if (fs.existsSync(demosDir)) {
-            fs.readdirSync(demosDir).forEach(f => {
-              const fullPath = path.join(demosDir, f);
-              if (fs.statSync(fullPath).isFile()) {
-                const lower = f.toLowerCase();
-                if (f.startsWith('video_demo') || lower.includes('video_demo')) {
-                  videoDemo = fullPath;
-                } else if (f.startsWith('tutorial') || lower.includes('tutorial')) {
-                  tutorialVideo = fullPath;
-                } else if (lower.endsWith('.mp3') || lower.endsWith('.mpeg') || lower.endsWith('.ogg') || lower.endsWith('.opus') || lower.endsWith('.wav') || lower.endsWith('.m4a')) {
-                  audioFiles.push(fullPath);
-                } else if (lower.endsWith('.mp4') || lower.endsWith('.webm') || lower.endsWith('.mov')) {
-                  allVideos.push(fullPath);
-                }
-              }
-            });
-          }
-
-          // Asignar video demo si no se especificó por nombre
-          if (!videoDemo && allVideos.length > 0) {
-            videoDemo = allVideos.find(v => v !== tutorialVideo) || allVideos[0];
-          }
-
-          // Asignar video tutorial si no se especificó por nombre
-          if (!tutorialVideo && allVideos.length > 0) {
-            tutorialVideo = allVideos.find(v => v !== videoDemo) || allVideos[allVideos.length - 1];
-          }
-
-          return { audioFiles, videoDemo, agradecimientoImg, tutorialVideo };
+          return { video1Saludo, video2Tutorial, agradecimientoImg };
         }
 
         // DETECCIÓN DE NOTAS DE VOZ
@@ -363,81 +327,113 @@ export async function connectWhatsApp(pairingPhoneNumber = null) {
           continue;
         }
 
-        // DETECCIÓN DE COMPROBANTE DE PAGO
+        // 1. DETECCIÓN DE MENSAJE DE COMPRA DESDE LA WEB (SIN IMAGEN AÚN)
+        const detectedPack = detectPackFromText(textMessage);
         const lowerTxt = textMessage.toLowerCase();
-        const isPaymentKeyword = lowerTxt.includes('comprobante') || lowerTxt.includes('ya pague') || lowerTxt.includes('ya transferi') || lowerTxt.includes('pago listo');
 
-        if (isImageMsg || isPaymentKeyword) {
-          console.log(`📸 Comprobante de pago recibido de ${jid}. Entregando pack y regalos...`);
-          const config = getBusinessConfig();
-          const entregaText = config.respuestas_rapidas.entrega;
-          await sock.sendMessage(jid, { text: entregaText });
-          chatState.markPurchased(jid); // ← marcar compra: remarketing ya no aplica
-          await new Promise(r => setTimeout(r, 1500));
-
-          const { agradecimientoImg, tutorialVideo } = getMediaFiles();
-          if (agradecimientoImg && fs.existsSync(agradecimientoImg)) {
-            try {
-              console.log(`🖼️ Enviando tarjeta de agradecimiento a ${jid}...`);
-              await sock.sendMessage(jid, {
-                image: fs.readFileSync(agradecimientoImg),
-                caption: '🛖💰🔥 ¡Bienvenido al proceso Construyendo Millones! - DJ Bonsai'
-              });
-              await new Promise(r => setTimeout(r, 2000));
-            } catch (e) {
-              console.error('Error enviando imagen:', e.message);
-            }
-          }
-
-          if (tutorialVideo && fs.existsSync(tutorialVideo)) {
-            try {
-              console.log(`🎥 Enviando video tutorial a ${jid}...`);
-              await sock.sendMessage(jid, {
-                video: fs.readFileSync(tutorialVideo),
-                caption: '🎥 Video Tutorial: Paso a paso para descargar tu música'
-              });
-            } catch (e) {
-              console.error('Error enviando video:', e.message);
-            }
-          }
+        if (detectedPack && !isImageMsg && (lowerTxt.includes('transferir') || lowerTxt.includes('adquirir') || lowerTxt.includes('activar') || lowerTxt.includes('acceso completo') || lowerTxt.includes('promocion') || lowerTxt.includes('pack') || lowerTxt.includes('combo'))) {
+          console.log(`📦 Pedido detectado desde la web para ${jid}: ${detectedPack.name} (${detectedPack.key})`);
+          chatState.setPendingPack(jid, detectedPack.key, detectedPack.name);
+          const askCaptureReply = `¡Perfecto! 🔥 Solo falta que me envíes la foto o captura del comprobante de pago para entregarte de inmediato tus códigos de acceso oficial de por vida para el *${detectedPack.name}*.`;
+          await sock.sendMessage(jid, { text: askCaptureReply });
           continue;
         }
 
-        // DEMOS DE AUDIO Y VIDEO
-        const isDemoKeyword = lowerTxt.includes('demo') || lowerTxt.includes('muestra') || lowerTxt.includes('escuchar') || lowerTxt.includes('probador') || lowerTxt.includes('audio') || lowerTxt.includes('video') || lowerTxt.includes('carpetas') || lowerTxt.includes('como viene');
+        // 2. DETECCIÓN DE COMPROBANTE DE PAGO (FOTO O PALABRA CLAVE DE PAGO)
+        const isPaymentKeyword = lowerTxt.includes('comprobante') || lowerTxt.includes('ya pague') || lowerTxt.includes('ya transferi') || lowerTxt.includes('pago listo') || lowerTxt.includes('adjunto');
 
-        if (isDemoKeyword) {
-          const { audioFiles, videoDemo } = getMediaFiles();
-          console.log(`🎧 Enviando muestras de audio y video a ${jid}...`);
+        if (isImageMsg || isPaymentKeyword) {
+          console.log(`📸 Comprobante recibido de ${jid}. Verificando pack...`);
+          const packToDeliver = detectedPack || chatState.getPendingPack(jid);
 
-          await sock.sendMessage(jid, { text: '🎧 ¡Con mucho gusto! Aquí te comparto el video demostrativo y las muestras de nuestras 60 carpetas de música:' });
-          await new Promise(r => setTimeout(r, 1500));
+          if (packToDeliver) {
+            const code = codeDispenser.getNextCode(packToDeliver.key, jid);
+            if (code) {
+              const deliveryText = `¡Pago confirmado con éxito! 🎉🎧 Bienvenido a *Bonsai Music Pool*.
 
-          // Enviar hasta 4 canciones completas
-          for (const audioPath of audioFiles.slice(0, 4)) {
-            try {
-              console.log(`🎵 Enviando muestra audio: ${path.basename(audioPath)}...`);
-              const audioConf = getAudioConfig(audioPath);
-              await sock.sendMessage(jid, {
-                audio: fs.readFileSync(audioPath),
-                mimetype: audioConf.mimetype,
-                ptt: audioConf.ptt
-              });
-              await new Promise(r => setTimeout(r, 1500));
-            } catch (err) {
-              console.error('Error enviando audio:', err.message);
+Tu pack ya está listo para descarga:
+🔑 *Tu código de activación:* ${code}
+📲 *Enlace con auto-desbloqueo:* https://bonsai-music-pool.vercel.app/?c=${code}
+
+⚠️ *CONDICIONES DE ACCESO:*
+• Tu acceso es *vitalicio (de por vida)* para descargar cuando quieras.
+• Este código es personal y es válido para *máximo 2 dispositivos* (tu celular y tu computador/laptop de DJ).
+• Al ingresar al enlace, tu pack quedará desbloqueado automáticamente.
+
+¡A romper la pista con la mejor música! 🚀🔥`;
+              await sock.sendMessage(jid, { text: deliveryText });
+              chatState.markPurchased(jid);
+              chatState.clearPendingPack(jid);
+              console.log(`✅ Pack ${packToDeliver.name} entregado a ${jid} con código ${code}`);
+              continue;
             }
           }
 
-          if (videoDemo && fs.existsSync(videoDemo)) {
+          // Si mandó foto pero no sabemos qué pack pagó:
+          console.log(`⚠️ Comprobante sin pack identificado de ${jid}. Indicando que valide el pack desde la web...`);
+          const redirectMsg = `¡Comprobante recibido con éxito! 🎉👏
+
+Para entregarte de inmediato tu código exacto de activación:
+👉 Ingresa a nuestra web oficial: https://bonsai-music-pool.vercel.app
+👉 Toca el botón de tu pack o combo y dale a *"Notificar Pago por WhatsApp"*.
+
+Así nuestro sistema detecta tu orden automáticamente y te libera tu código de por vida al instante. 🎧🔥`;
+          await sock.sendMessage(jid, { text: redirectMsg });
+          continue;
+        }
+
+        // 3. DEMOS / MUESTRAS EN VIVO EN LA WEB (SIN AUDIOS PESADOS POR WHATSAPP)
+        const isDemoKeyword = lowerTxt.includes('demo') || lowerTxt.includes('muestra') || lowerTxt.includes('escuchar') || lowerTxt.includes('probador') || lowerTxt.includes('como viene');
+
+        if (isDemoKeyword) {
+          console.log(`🎧 Invitando a probar la música en vivo en la web a ${jid}...`);
+          const demoReply = "¡Montamos un reproductor en vivo en nuestra web oficial para que escuches todo sin gastar la memoria de tu WhatsApp! 🚀\n\nEntra aquí:\n🌐 https://bonsai-music-pool.vercel.app\n\nPuedes darle play a cualquier canción completa en 320 Kbps sin marcas, ver cuántas carpetas tiene cada pack y cuántos Gigas pesa. ¡Escuchas exactamente lo que te vas a llevar!";
+          await sock.sendMessage(jid, { text: demoReply });
+          continue;
+        }
+
+        // 4. SALUDO INICIAL + VIDEO EXPLICATIVO DE DJ BONSAI
+        const history = chatState.getHistory(jid);
+        const isInfoOrGreeting = 
+          lowerTxt.includes('hola') || 
+          lowerTxt.includes('buenas') ||
+          lowerTxt.includes('info') || 
+          lowerTxt.includes('informacion') ||
+          lowerTxt.includes('de que trata') ||
+          lowerTxt.includes('mas info');
+
+        if (history.length === 0 || isInfoOrGreeting) {
+          const config = getBusinessConfig();
+          console.log(`👋 Enviando bienvenida a ${jid}...`);
+          await sock.sendMessage(jid, { text: config.respuestas_rapidas.saludo_e_info });
+          chatState.addMessage(jid, 'assistant', config.respuestas_rapidas.saludo_e_info);
+
+          // Enviar videos de DJ Bonsai (Video 1: Saludo + Video 2: Tutorial)
+          const { video1Saludo, video2Tutorial } = getMediaFiles();
+          
+          if (video1Saludo && fs.existsSync(video1Saludo)) {
             try {
-              console.log(`🎥 Enviando video demo: ${path.basename(videoDemo)}...`);
+              await new Promise(r => setTimeout(r, 1500));
+              console.log(`🎥 Enviando video 1 (saludo) a ${jid}...`);
               await sock.sendMessage(jid, {
-                video: fs.readFileSync(videoDemo),
-                caption: '🎥 Vista Previa: Así vienen organizadas nuestras 60 carpetas de música'
+                video: fs.readFileSync(video1Saludo),
+                caption: '👋 ¡Hola! Te habla DJ Bonsai en persona. Mira este video antes de empezar 🔥'
               });
-            } catch (err) {
-              console.error('Error enviando video demo:', err.message);
+            } catch (vErr) {
+              console.error('Error enviando video 1:', vErr.message);
+            }
+          }
+
+          if (video2Tutorial && fs.existsSync(video2Tutorial)) {
+            try {
+              await new Promise(r => setTimeout(r, 2000));
+              console.log(`🎥 Enviando video 2 (tutorial) a ${jid}...`);
+              await sock.sendMessage(jid, {
+                video: fs.readFileSync(video2Tutorial),
+                caption: '📲 Tutorial: Cómo navegar en la web, escuchar canciones en vivo y descargar tus packs 🎧'
+              });
+            } catch (v2Err) {
+              console.error('Error enviando video 2:', v2Err.message);
             }
           }
           continue;
