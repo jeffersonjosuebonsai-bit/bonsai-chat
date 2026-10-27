@@ -15,6 +15,7 @@
  */
 
 import { chatState } from '../state/chatState.js';
+import { isInternationalCustomer } from '../packDetector.js';
 
 // ── Configuración de tiempos ──────────────────────────────────────────────────
 const REMARKETING_DELAY_MS  = 2 * 60 * 60 * 1000;  // 2 horas de silencio del cliente
@@ -81,7 +82,9 @@ const REMARKETING_POOL = [
  * @param {Array} history — historial de mensajes [{role, content}]
  * @returns {string} — el texto del mensaje a enviar
  */
-function pickSmartMessage(history) {
+function pickSmartMessage(history, jid = '') {
+  const isIntl = isInternationalCustomer(jid);
+
   // Unir todo el texto del historial en minúsculas para buscar palabras clave
   const fullHistory = history
     .map(m => m.content || '')
@@ -96,17 +99,33 @@ function pickSmartMessage(history) {
     return !yaSeHabloDeEsto;
   });
 
+  let rawMessage = '';
+
   // Si quedan variantes disponibles, elegir una al azar entre ellas
   if (disponibles.length > 0) {
     const idx = Math.floor(Math.random() * disponibles.length);
     console.log(`📣 [Remarketing] Tema elegido (no mencionado antes): variante disponible ${idx + 1}/${disponibles.length}`);
-    return disponibles[idx].text;
+    rawMessage = disponibles[idx].text;
+  } else {
+    // Si todos los temas ya se cubrieron (conversación muy completa), usar fallback
+    console.log(`📣 [Remarketing] Todos los temas cubiertos. Usando mensaje neutral de fallback.`);
+    rawMessage = `Ey, te habla DJ Bonsai 🌱 ¿Llegaste a decidirte con el pack de música? Aquí estoy por si tienes alguna pregunta o necesitas que te cuente algo más 🙌🔥`;
   }
 
-  // Si todos los temas ya se cubrieron (conversación muy completa),
-  // usar el mensaje más neutral como fallback
-  console.log(`📣 [Remarketing] Todos los temas cubiertos. Usando mensaje neutral de fallback.`);
-  return `Ey, te habla DJ Bonsai 🌱 ¿Llegaste a decidirte con el pack de música? Aquí estoy por si tienes alguna pregunta o necesitas que te cuente algo más 🙌🔥`;
+  // Si el cliente es internacional, adaptar precios COP y links a internacional
+  if (isIntl) {
+    rawMessage = rawMessage
+      .replace(/por solo \$9\.900 COP/g, 'desde solo $3.00 USD')
+      .replace(/\$9\.900 COP/g, 'dólares (desde $3 USD)')
+      .replace(/\$5\.000 COP/g, '$3.00 USD')
+      .replace(/https:\/\/bonsai-music-pool\.vercel\.app(?!\?pais=int)/g, 'https://bonsai-music-pool.vercel.app?pais=int');
+
+    if (rawMessage.includes('promo de hoy')) {
+      rawMessage = `Ey, te habla DJ Bonsai 🌱 ¿Llegaste a ver bien todo lo que trae el pack? Más de 10.000 canciones en 60 carpetas desde solo $3 USD — y con la promo internacional te llevas packs completos más el acceso a la app Bonsai Play. Puedes adquirir con tarjeta o PayPal en Gumroad sin compromiso, pregunta lo que quieras 🙌`;
+    }
+  }
+
+  return rawMessage;
 }
 
 /**
@@ -153,7 +172,7 @@ export function startRemarketingJob(getSocketSender) {
         if (silencioMs > LIMITE_SUPERIOR_MS)    continue; // lead frío (> 23h), descartar
 
         // ── Elegir mensaje inteligente según el historial ─────────────────
-        const mensaje = pickSmartMessage(history);
+        const mensaje = pickSmartMessage(history, jid);
 
         console.log(`📣 [Remarketing] Enviando a ${jid} (silencio: ${Math.round(silencioMs / 60000)} min | historial: ${history.length} msgs)`);
 
