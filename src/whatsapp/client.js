@@ -14,7 +14,7 @@ import { chatState } from '../state/chatState.js';
 import { SalesAgent } from '../ai/salesAgent.js';
 import { getBusinessConfig } from '../config.js';
 import { codeDispenser } from '../codeDispenser.js';
-import { detectPackFromText } from '../packDetector.js';
+import { detectPackFromText, isInternationalCustomer } from '../packDetector.js';
 
 let isWhatsAppConnected = false;
 let isInitializing = false;
@@ -313,22 +313,33 @@ export async function connectWhatsApp(pairingPhoneNumber = null) {
           continue;
         }
 
+        // 1. DETECCIÓN DE CLIENTE INTERNACIONAL (FUERA DE COLOMBIA / PREFIJO DISTINTO A +57 O PIDE USD)
+        const isIntl = isInternationalCustomer(jid, textMessage);
+
         // 1. DETECCIÓN DE MENSAJE DE COMPRA DESDE LA WEB O NÚMERO (SIN IMAGEN AÚN)
         const detectedPack = detectPackFromText(textMessage);
         const lowerTxt = textMessage.toLowerCase();
         const trimmedTxt = lowerTxt.trim().replace('.', '');
         const isNumericChoice = ['1','2','3','4','5','6','7','8'].includes(trimmedTxt);
 
-        if (detectedPack && !isImageMsg && (isNumericChoice || lowerTxt.includes('transferir') || lowerTxt.includes('adquirir') || lowerTxt.includes('activar') || lowerTxt.includes('acceso completo') || lowerTxt.includes('promocion') || lowerTxt.includes('pack') || lowerTxt.includes('combo'))) {
-          console.log(`📦 Pedido detectado para ${jid}: ${detectedPack.name} (${detectedPack.key})`);
+        if (detectedPack && !isImageMsg && (isNumericChoice || lowerTxt.includes('transferir') || lowerTxt.includes('adquirir') || lowerTxt.includes('activar') || lowerTxt.includes('acceso completo') || lowerTxt.includes('promocion') || lowerTxt.includes('pack') || lowerTxt.includes('combo') || lowerTxt.includes('gumroad') || lowerTxt.includes('comprar'))) {
+          console.log(`📦 Pedido detectado para ${jid} (Internacional: ${isIntl}): ${detectedPack.name} (${detectedPack.key})`);
           chatState.setPendingPack(jid, detectedPack.key, detectedPack.name, detectedPack.subPacks || []);
-          const askCaptureReply = `¡Perfecto! 🔥 Solo falta que me envíes la foto o captura del comprobante de pago para entregarte de inmediato tu código de acceso oficial de por vida para el *${detectedPack.name}*.`;
+          
+          let askCaptureReply = `¡Perfecto! 🔥 Solo falta que me envíes la foto o captura del comprobante de pago para entregarte de inmediato tu código de acceso oficial de por vida para el *${detectedPack.name}*.`;
+          if (isIntl) {
+            askCaptureReply = `¡Perfecto! 🔥 Puedes completar tu compra con tarjeta débito/crédito o PayPal en nuestra pasarela oficial de Gumroad:
+👉 https://bonsaijefferson.gumroad.com/l/hiluhk
+
+En cuanto realices tu compra, me envías la foto del comprobante o tu número de orden de Gumroad y de inmediato te entrego tu código de acceso oficial de por vida para el *${detectedPack.name}*.`;
+          }
+
           await sock.sendMessage(jid, { text: askCaptureReply });
           continue;
         }
 
         // 2. DETECCIÓN DE COMPROBANTE DE PAGO (FOTO O PALABRA CLAVE DE PAGO)
-        const isPaymentKeyword = lowerTxt.includes('comprobante') || lowerTxt.includes('ya pague') || lowerTxt.includes('ya transferi') || lowerTxt.includes('pago listo') || lowerTxt.includes('adjunto');
+        const isPaymentKeyword = lowerTxt.includes('comprobante') || lowerTxt.includes('ya pague') || lowerTxt.includes('ya transferi') || lowerTxt.includes('pago listo') || lowerTxt.includes('adjunto') || lowerTxt.includes('orden') || lowerTxt.includes('gumroad');
 
         if (isImageMsg || isPaymentKeyword) {
           console.log(`📸 Comprobante recibido de ${jid}. Verificando pack...`);
@@ -337,7 +348,8 @@ export async function connectWhatsApp(pairingPhoneNumber = null) {
           if (packToDeliver) {
             const code = codeDispenser.getNextCode(packToDeliver.key, jid);
             if (code) {
-              let autoUrl = `https://bonsai-music-pool.vercel.app/?c=${code}`;
+              const intlParam = isIntl ? '&pais=int' : '';
+              let autoUrl = `https://bonsai-music-pool.vercel.app/?c=${code}${intlParam}`;
               let specificPackNote = "";
 
               if (packToDeliver.key === 'VIP') {
@@ -381,7 +393,10 @@ export async function connectWhatsApp(pairingPhoneNumber = null) {
 
           // Si mandó foto pero no sabemos qué pack pagó:
           console.log(`⚠️ Comprobante sin pack identificado de ${jid}. Solicitando número de pack o validación web...`);
-          const redirectMsg = `¡Comprobante recibido con éxito! 🎉👏
+          const config = getBusinessConfig();
+          const redirectMsg = isIntl && config.internacional?.respuestas_rapidas?.preguntar_cual_pack
+            ? config.internacional.respuestas_rapidas.preguntar_cual_pack
+            : `¡Comprobante recibido con éxito! 🎉👏
 
 Para entregarte de inmediato tu código exacto de activación, indícame cuál pack o combo compraste (puedes responder simplemente con el número):
 
@@ -395,6 +410,7 @@ Para entregarte de inmediato tu código exacto de activación, indícame cuál p
 8️⃣ Mega Combo VIP (Todos los packs completos) ($35.000 COP)
 
 O si compraste directamente en nuestra web, ingresa a https://bonsai-music-pool.vercel.app y toca *"Notificar Pago por WhatsApp"* en tu pack. 🎧🔥`;
+
           await sock.sendMessage(jid, { text: redirectMsg });
           continue;
         }
@@ -404,7 +420,8 @@ O si compraste directamente en nuestra web, ingresa a https://bonsai-music-pool.
 
         if (isDemoKeyword) {
           console.log(`🎧 Invitando a probar la música en vivo en la web a ${jid}...`);
-          const demoReply = "¡Montamos un reproductor en vivo en nuestra web oficial para que escuches todo sin gastar la memoria de tu WhatsApp! 🚀\n\nEntra aquí:\n🌐 https://bonsai-music-pool.vercel.app\n\nPuedes darle play a cualquier canción completa en 320 Kbps sin marcas, ver cuántas carpetas tiene cada pack y cuántos Gigas pesa. ¡Escuchas exactamente lo que te vas a llevar!";
+          const webUrl = isIntl ? 'https://bonsai-music-pool.vercel.app?pais=int' : 'https://bonsai-music-pool.vercel.app';
+          const demoReply = `¡Montamos un reproductor en vivo en nuestra web oficial para que escuches todo sin gastar la memoria de tu WhatsApp! 🚀\n\nEntra aquí:\n🌐 ${webUrl}\n\nPuedes darle play a cualquier canción completa en 320 Kbps sin marcas, ver cuántas carpetas tiene cada pack y cuántos Gigas pesa. ¡Escuchas exactamente lo que te vas a llevar!`;
           await sock.sendMessage(jid, { text: demoReply });
           continue;
         }
@@ -421,9 +438,13 @@ O si compraste directamente en nuestra web, ingresa a https://bonsai-music-pool.
 
         if (history.length === 0 || isInfoOrGreeting) {
           const config = getBusinessConfig();
-          console.log(`👋 Enviando bienvenida a ${jid}...`);
-          await sock.sendMessage(jid, { text: config.respuestas_rapidas.saludo_e_info });
-          chatState.addMessage(jid, 'assistant', config.respuestas_rapidas.saludo_e_info);
+          const saludoMsg = isIntl && config.internacional?.respuestas_rapidas?.saludo_e_info
+            ? config.internacional.respuestas_rapidas.saludo_e_info
+            : config.respuestas_rapidas.saludo_e_info;
+
+          console.log(`👋 Enviando bienvenida a ${jid} (Internacional: ${isIntl})...`);
+          await sock.sendMessage(jid, { text: saludoMsg });
+          chatState.addMessage(jid, 'assistant', saludoMsg);
 
           // Enviar videos de DJ Bonsai (Video 1: Saludo + Video 2: Tutorial)
           const { video1Saludo, video2Tutorial } = getMediaFiles();
