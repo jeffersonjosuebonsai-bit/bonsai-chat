@@ -1,26 +1,66 @@
 export function isInternationalCustomer(jid, text = '') {
   if (!jid) return false;
-  // Extraer sólo los números del teléfono (quitando @s.whatsapp.net, +, espacios, etc.)
-  const rawNumber = jid.split('@')[0].replace(/[^0-9]/g, '');
 
-  // Si el usuario explícitamente pide dólares, gumroad, paypal o menciona otro país:
   const t = (text || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-  const mentionsInternational = 
+
+  // 1. Si el cliente menciona explícitamente pagar por Gumroad, PayPal, Dólares o que está en el exterior:
+  if (
     t.includes('gumroad') || 
     t.includes('paypal') || 
     t.includes('dolar') || 
     t.includes('usd') || 
     t.includes('tarjeta internacional') || 
     t.includes('otro pais') ||
-    t.includes('extranjero');
-
-  // En Colombia todos los números de celular empiezan por 573... (código país 57)
-  if (rawNumber.startsWith('57')) {
-    return mentionsInternational ? true : false;
+    t.includes('extranjero') ||
+    t.includes('fuera de colombia')
+  ) {
+    return true;
   }
 
-  // Cualquier número cuyo prefijo no sea 57 (+52 México, +51 Perú, +593 Ecuador, +56 Chile, +1 USA, etc.)
-  return true;
+  // 2. Si el JID es un LID (@lid de WhatsApp), NO contiene el número telefónico real.
+  // En tu negocio el 99% es Colombia, por lo tanto NUNCA asumir internacional por un @lid.
+  if (jid.includes('@lid')) {
+    return false;
+  }
+
+  // 3. Extraer sólo los números del teléfono
+  const rawNumber = jid.split('@')[0].replace(/[^0-9]/g, '');
+
+  // Si empieza por 57 (Colombia) o es un celular colombiano (10 dígitos empezando en 3 ej. 310, 318, 323, 300) -> COLOMBIA
+  if (rawNumber.startsWith('57') || (rawNumber.startsWith('3') && rawNumber.length === 10)) {
+    return false;
+  }
+
+  // 4. Prefijos telefónicos internacionales conocidos y comprobados:
+  // México (+52), Perú (+51), Argentina (+54), Chile (+56), Ecuador (+593), Bolivia (+591),
+  // Paraguay (+595), Uruguay (+598), Panamá (+507), Costa Rica (+506), Guatemala (+502),
+  // El Salvador (+503), Honduras (+504), España (+34), USA / Canadá (+1)
+  const FOREIGN_PREFIXES = [
+    '52',  // México
+    '51',  // Perú
+    '54',  // Argentina
+    '56',  // Chile
+    '593', // Ecuador
+    '591', // Bolivia
+    '595', // Paraguay
+    '598', // Uruguay
+    '507', // Panamá
+    '506', // Costa Rica
+    '504', // Honduras
+    '503', // El Salvador
+    '502', // Guatemala
+    '58',  // Venezuela
+    '34',  // España
+    '1'    // USA / Canadá
+  ];
+
+  const isExplicitForeign = FOREIGN_PREFIXES.some(prefix => rawNumber.startsWith(prefix));
+  if (isExplicitForeign) {
+    return true;
+  }
+
+  // 5. REGLA DE ORO: ANTE CUALQUIER DUDA O NÚMERO DESCONOCIDO, ES 100% COLOMBIA (COP / Nequi)
+  return false;
 }
 
 export function detectPackFromText(text) {
