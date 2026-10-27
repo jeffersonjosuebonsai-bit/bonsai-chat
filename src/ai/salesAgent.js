@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { getBusinessConfig } from '../config.js';
 import { chatState } from '../state/chatState.js';
+import { isInternationalCustomer } from '../packDetector.js';
 
 export class SalesAgent {
   constructor() {
@@ -24,11 +25,53 @@ export class SalesAgent {
     return {};
   }
 
-  buildSystemPrompt(config) {
+  buildSystemPrompt(config, isIntl = false) {
     const emp = config.empleado_digital;
     const neg = config.negocio;
     const rap = config.respuestas_rapidas;
     const faqs = config.objeciones_y_faqs || {};
+
+    if (isIntl) {
+      return `
+Tu nombre es: ${emp.nombre} (DJ Bonsai).
+Ocupación: DJ profesional, creador de la plataforma oficial Bonsai Music Pool.
+Tono de voz: Amigable, respetuoso, con energía de DJ colombiano, educado, seguro y 100% transparente.
+
+CLIENTE INTERNACIONAL:
+- Este cliente se comunica desde fuera de Colombia (o requiere pagar en dólares / pasarela internacional).
+- Todos los precios son en DÓLARES (USD).
+- La forma de pago es ÚNICAMENTE con tarjeta débito, crédito o PayPal en la pasarela internacional oficial de Gumroad: https://bonsaijefferson.gumroad.com/l/hiluhk
+- JAMÁS ofrezcas Nequi ni Bre-B a este cliente.
+
+PÚBLICO Y USOS DE NUESTRA MÚSICA:
+- Sirve tanto para DJs profesionales y discotecas (versiones Extended con intro y outro, BPM y sin sellos ni pisadores), como para cualquier persona, negocio, gimnasio, carro o fiestas en casa que quiera disfrutar de la mejor música limpia en 320 Kbps sin marcas ni anuncios molestos.
+
+INFORMACIÓN DE LA PLATAFORMA (BONSAI MUSIC POOL):
+- Web oficial internacional con reproductor en vivo: https://bonsai-music-pool.vercel.app?pais=int
+- En la web, el cliente puede escuchar todas las canciones completas en vivo sin sellos en 320 Kbps, ver la cantidad de carpetas y el peso exacto en Gigas de cada pack antes de comprar.
+- La compra internacional se hace mediante Gumroad: https://bonsaijefferson.gumroad.com/l/hiluhk
+
+CATÁLOGO OFICIAL Y PRECIOS EN DÓLARES (SIEMPRE ENUMERA DEL 1 AL 8 AL DAR INFORMACIÓN O PRECIOS):
+1️⃣ Pack Samples & Efectos DJ: $3.00 USD (Samples, redobles, sirenas, transiciones).
+2️⃣ Pack Decembrino 2026: $4.99 USD (Parranderos, fin de año, salsa de fiesta, cumbias).
+3️⃣ Pack 1000 Videos Remix: $4.99 USD (Videos Full HD para pantallas de discotecas, bares o salas).
+4️⃣ Pack Crossover Originales & Remix: $4.99 USD (Reggaetón, Salsa, Bachata, Vallenato, Merengue).
+5️⃣ Pack Halloween 2026: $4.99 USD (Temático rumbero).
+6️⃣ Combo Dúo (2 Packs a elección): $7.99 USD (Elige 2 packs a tu gusto).
+7️⃣ Combo Trío (3 Packs a elección): $9.99 USD (Elige 3 packs a tu gusto).
+8️⃣ Mega Combo VIP (Todos los packs incluidos): $14.99 USD (Acceso total vitalicio).
+
+CONDICIONES DE SEGURIDAD Y ACCESO:
+- Pago: Pasarela oficial y segura de Gumroad (Tarjeta / PayPal).
+- Entrega: Al enviar la foto del recibo o número de orden de Gumroad, el bot entrega su Código Único de activación.
+- Dispositivos: Máximo 2 dispositivos por código (por ejemplo, celular y computador).
+- Duración: Acceso vitalicio de por vida, sin límite de tiempo ni mensualidades.
+
+DISTINCIÓN VITAL:
+1. Si preguntan para quién sirve: Explicar que sirve tanto para DJs y discotecas como para escuchar en la casa, gimnasio, negocio, carro o fiestas familiares con amigos.
+2. Si preguntan por CONTRATAR a DJ Bonsai para un evento presencial (fiesta, 15 años, boda, discoteca, cuánto cobras por tocar): Responder que sí realiza presentaciones presenciales, preguntar fecha y ciudad, y avisarle que DJ Bonsai en persona le responderá por este chat.
+`.trim();
+    }
 
     return `
 Tu nombre es: ${emp.nombre} (DJ Bonsai).
@@ -233,10 +276,15 @@ DISTINCIÓN VITAL:
       lower.includes('metodos de pago') ||
       lower.includes('quiero pagar');
 
+    const isIntl = isInternationalCustomer(jid, userMessage);
+
     if ((history.length === 0 || isInfoOrGreeting) && !isExplicitPaymentKeyword) {
+      const saludoMsg = isIntl && config.internacional?.respuestas_rapidas?.saludo_e_info
+        ? config.internacional.respuestas_rapidas.saludo_e_info
+        : config.respuestas_rapidas.saludo_e_info;
       chatState.addMessage(jid, 'user', userMessage);
-      chatState.addMessage(jid, 'assistant', config.respuestas_rapidas.saludo_e_info);
-      return config.respuestas_rapidas.saludo_e_info;
+      chatState.addMessage(jid, 'assistant', saludoMsg);
+      return saludoMsg;
     }
 
     // 5. INTENCIÓN DIRECTA DE COMPRA ("Lo quiero", "Cómo lo compro", "Dame el Nequi")
@@ -252,9 +300,36 @@ DISTINCIÓN VITAL:
       lower.includes('a que numero') ||
       lower.includes('como es el pago') ||
       lower.includes('mandame los datos') ||
+      lower.includes('gumroad') ||
+      lower.includes('paypal') ||
+      lower.includes('tarjeta') ||
       lower.includes('dame los datos');
 
     if (isExplicitPaymentRequest) {
+      if (isIntl) {
+        const intlPayReply = config.internacional?.respuestas_rapidas?.pago_y_tarjetas || `¡Excelente decisión! 💳 Puedes pagar de forma 100% segura con tu tarjeta débito, crédito o PayPal a través de nuestra pasarela internacional oficial de Gumroad:
+
+👉 https://bonsaijefferson.gumroad.com/l/hiluhk
+
+🔥 MENÚ DE PACKS Y PRECIOS EN DÓLARES (USD):
+1️⃣ Pack Samples & Efectos DJ ($3.00 USD)
+2️⃣ Pack Decembrino 2026 ($4.99 USD)
+3️⃣ Pack 1000 Videos Remix ($4.99 USD)
+4️⃣ Pack Crossover Originales & Extended ($4.99 USD)
+5️⃣ Pack Halloween 2026 ($4.99 USD)
+6️⃣ Combo Dúo (2 Packs a elección) ($7.99 USD)
+7️⃣ Combo Trío (3 Packs a elección) ($9.99 USD)
+8️⃣ Mega Combo VIP (Todos los packs completos) ($14.99 USD)
+
+También puedes pre-escuchar y elegir en nuestra web:
+🌐 https://bonsai-music-pool.vercel.app?pais=int
+
+Una vez completada tu compra, me envías la foto del comprobante o tu número de orden de Gumroad, y de inmediato te entrego tu código de activación vitalicio para tus 2 dispositivos 🙌🎧`;
+        chatState.addMessage(jid, 'user', userMessage);
+        chatState.addMessage(jid, 'assistant', intlPayReply);
+        return intlPayReply;
+      }
+
       const pagoReply = `¡Excelente decisión! 💳 Puedes transferir por Nequi o por llave Bre-B:
 
 📲 Nequi: ${config.metodos_pago.nequi}
@@ -428,7 +503,7 @@ Envíame el comprobante y el número o nombre de tu pack, y de inmediato te entr
 
     // P. RESPUESTA DINÁMICA MEDIANTE IA GEMINI CON HISTORIAL COMPLETO
     if (this.isValidKey) {
-      const systemPrompt = this.buildSystemPrompt(config);
+      const systemPrompt = this.buildSystemPrompt(config, isIntl);
       const aiReply = await this.callGeminiAPI(systemPrompt, history, userMessage);
       if (aiReply) {
         chatState.addMessage(jid, 'user', userMessage);
@@ -438,7 +513,10 @@ Envíame el comprobante y el número o nombre de tu pack, y de inmediato te entr
     }
 
     // Q. RESPUESTA DINÁMICA DE RESPALDO SI NO HAY RED O IA
-    const defaultReply = "¡Con el mayor gusto! 🎧 Respecto a lo que me preguntas: nuestro pack viene super completo con más de 60 carpetas y 10.000 canciones por $9.900 COP. Si quieres escuchar las muestras de audio o tienes alguna inquietud sobre el contenido, dime con total confianza y te ayudo de una 🙌🔥";
+    const defaultReply = isIntl
+      ? "¡Con el mayor gusto! 🎧 Respecto a lo que me preguntas: nuestro pack viene súper completo con más de 60 carpetas y 10.000 canciones desde solo $3.00 USD. Si quieres escuchar las muestras en vivo en la web (https://bonsai-music-pool.vercel.app?pais=int) o tienes alguna inquietud sobre el contenido o el pago por Gumroad, dime con total confianza y te ayudo de una 🙌🔥"
+      : "¡Con el mayor gusto! 🎧 Respecto a lo que me preguntas: nuestro pack viene super completo con más de 60 carpetas y 10.000 canciones por $9.900 COP. Si quieres escuchar las muestras de audio o tienes alguna inquietud sobre el contenido, dime con total confianza y te ayudo de una 🙌🔥";
+
     chatState.addMessage(jid, 'user', userMessage);
     chatState.addMessage(jid, 'assistant', defaultReply);
     return defaultReply;
