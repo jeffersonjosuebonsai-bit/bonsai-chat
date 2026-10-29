@@ -1,65 +1,76 @@
 export function isInternationalCustomer(jid, text = '') {
-  if (!jid) return false;
-
   const t = (text || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 
-  // 1. Si el cliente menciona explícitamente pagar por Gumroad, PayPal, Dólares o que está en el exterior:
-  if (
-    t.includes('gumroad') || 
-    t.includes('paypal') || 
-    t.includes('dolar') || 
-    t.includes('usd') || 
-    t.includes('tarjeta internacional') || 
-    t.includes('otro pais') ||
-    t.includes('extranjero') ||
-    t.includes('fuera de colombia')
-  ) {
+  // 1. Palabras clave explícitas en el texto del cliente (dólares, pasarelas, divisas o países):
+  const intlKeywords = [
+    'gumroad',
+    'paypal',
+    'dolar',
+    'usd',
+    'tarjeta internacional',
+    'tarjeta de credito',
+    'otro pais',
+    'extranjero',
+    'fuera de colombia',
+    'no soy de colombia',
+    'no estoy en colombia',
+    'vivo en',
+    'ecuador',
+    'bolivia',
+    'peru',
+    'mexico',
+    'chile',
+    'argentina',
+    'venezuela',
+    'espana',
+    'estados unidos',
+    'usa',
+    'panama',
+    'costa rica',
+    'guatemala',
+    'honduras',
+    'el salvador',
+    'paraguay',
+    'uruguay',
+    'puerto rico',
+    'republica dominicana',
+    'soles',
+    'pesos mexicanos',
+    'pesos chilenos',
+    'pesos argentinos',
+    'bolivianos'
+  ];
+
+  if (intlKeywords.some(kw => t.includes(kw))) {
     return true;
   }
 
-  // 2. Si el JID es un LID (@lid de WhatsApp), NO contiene el número telefónico real.
-  // En tu negocio el 99% es Colombia, por lo tanto NUNCA asumir internacional por un @lid.
+  // 2. Si no hay JID, no podemos evaluar por teléfono
+  if (!jid) return false;
+
+  // 3. Si el JID es un LID (@lid de WhatsApp / Meta Ads Click-To-WhatsApp):
+  // No contiene el número telefónico real. Se delega al mensaje de bienvenida con doble opción COP / USD.
   if (jid.includes('@lid')) {
     return false;
   }
 
-  // 3. Extraer sólo los números del teléfono
-  const rawNumber = jid.split('@')[0].replace(/[^0-9]/g, '');
+  // 4. Extraer sólo los números del teléfono
+  const rawNumber = jid.split('@')[0].split(':')[0].replace(/[^0-9]/g, '');
 
-  // Si empieza por 57 (Colombia) o es un celular colombiano (10 dígitos empezando en 3 ej. 310, 318, 323, 300) -> COLOMBIA
-  if (rawNumber.startsWith('57') || (rawNumber.startsWith('3') && rawNumber.length === 10)) {
-    return false;
-  }
+  // 5. Verificación de número telefónico real (mínimo 7 dígitos):
+  if (rawNumber.length >= 7) {
+    // Si empieza por 57 (Prefijo internacional único de Colombia) -> COLOMBIA
+    // O si es un número celular colombiano de 10 dígitos que empieza en 3 (ej. 310, 318, 323, 300) -> COLOMBIA
+    const isColombia = rawNumber.startsWith('57') || (rawNumber.length === 10 && rawNumber.startsWith('3'));
+    if (isColombia) {
+      return false;
+    }
 
-  // 4. Prefijos telefónicos internacionales conocidos y comprobados:
-  // México (+52), Perú (+51), Argentina (+54), Chile (+56), Ecuador (+593), Bolivia (+591),
-  // Paraguay (+595), Uruguay (+598), Panamá (+507), Costa Rica (+506), Guatemala (+502),
-  // El Salvador (+503), Honduras (+504), España (+34), USA / Canadá (+1)
-  const FOREIGN_PREFIXES = [
-    '52',  // México
-    '51',  // Perú
-    '54',  // Argentina
-    '56',  // Chile
-    '593', // Ecuador
-    '591', // Bolivia
-    '595', // Paraguay
-    '598', // Uruguay
-    '507', // Panamá
-    '506', // Costa Rica
-    '504', // Honduras
-    '503', // El Salvador
-    '502', // Guatemala
-    '58',  // Venezuela
-    '34',  // España
-    '1'    // USA / Canadá
-  ];
-
-  const isExplicitForeign = FOREIGN_PREFIXES.some(prefix => rawNumber.startsWith(prefix));
-  if (isExplicitForeign) {
+    // CUALQUIER OTRO NÚMERO TELEFÓNICO REAL ES 100% INTERNACIONAL
+    // (Abarca +593 Ecuador, +591 Bolivia, +598 Uruguay, +595 Paraguay, +52 México, +1 USA, +34 España, etc.)
     return true;
   }
 
-  // 5. REGLA DE ORO: ANTE CUALQUIER DUDA O NÚMERO DESCONOCIDO, ES 100% COLOMBIA (COP / Nequi)
   return false;
 }
 
