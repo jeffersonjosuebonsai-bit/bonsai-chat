@@ -16,6 +16,7 @@ class ChatStateManager {
         isHumanActive: false,
         lastHumanIntervention: 0,
         history: [],
+        isIntl: false,
         // ── Remarketing tracking ───────────────────────────────────────────
         lastIncomingMessageAt: 0,  // timestamp del último mensaje del cliente
         hasPurchased: false,        // true si el bot ya entregó el pack
@@ -81,6 +82,20 @@ class ChatStateManager {
   clearPendingPack(jid) {
     const state = this.getChatState(jid);
     state.pendingPack = null;
+  }
+  // ──────────────────────────────────────────────────────────────────────────
+
+  // ── Gestión de Cliente Internacional ──────────────────────────────────────
+  setIsIntl(jid, isIntl = true) {
+    const state = this.getChatState(jid);
+    state.isIntl = Boolean(isIntl);
+    if (isIntl) {
+      console.log(`🌎 [chatState] Chat marcado como INTERNACIONAL (USD / Gumroad): ${jid}`);
+    }
+  }
+
+  getIsIntl(jid) {
+    return Boolean(this.getChatState(jid).isIntl);
   }
   // ──────────────────────────────────────────────────────────────────────────
 
