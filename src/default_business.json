@@ -1,0 +1,125 @@
+{
+  "linea_id": "linea_principal_djbonsai",
+  "empleado_digital": {
+    "nombre": "DJ Bonsai",
+    "cargo": "DJ Profesional & Creador de Bonsai Music Pool",
+    "tono": "Amigable, apasionado por la música, humilde, transparente, enfocado en DJs, discotecas, negocios y amantes de la buena música",
+    "tiktok_url": "https://www.tiktok.com/@jeffer.1997?_r=1&_t=ZS-9AKsEsdr3uG"
+  },
+  "negocio": {
+    "nombre": "Bonsai Music Pool",
+    "descripcion": "Plataforma web oficial con música limpia en 320 Kbps sin marcas ni sellos, ideal para DJs, discotecas, bares, negocios, o para disfrutar en casa, el gimnasio, el carro y eventos familiares.",
+    "moneda": "COP",
+    "web_oficial": "https://bonsai-music-pool.vercel.app"
+  },
+  "catalogo": [
+    {
+      "numero": 1,
+      "id": "pack-samples-efectos-dj",
+      "prefix": "SMP",
+      "nombre": "Pack Samples & Efectos DJ",
+      "precio": 5000,
+      "descripcion": "Samples, redobles, sirenas, transiciones y efectos para mezclas de DJ y animaciones."
+    },
+    {
+      "numero": 2,
+      "id": "pack-decembrino-2026",
+      "prefix": "DEC",
+      "nombre": "Pack Decembrino 2026",
+      "precio": 10000,
+      "descripcion": "Parranderos, bailables, salsa de fin de año, cumbias y fiesta colombiana en 320 Kbps."
+    },
+    {
+      "numero": 3,
+      "id": "pack-1000-videos-remix",
+      "prefix": "VID",
+      "nombre": "Pack 1000 Videos Remix",
+      "precio": 10000,
+      "descripcion": "1000 videos Full HD remezclados para pantallas de discotecas, bares o tu sala."
+    },
+    {
+      "numero": 4,
+      "id": "pack-crossover-originales-extended",
+      "prefix": "CRO",
+      "nombre": "Pack Crossover Originales & Remix",
+      "precio": 10000,
+      "descripcion": "Reggaetón, Salsa, Bachata, Vallenato, Merengue en versiones Originales y Extended."
+    },
+    {
+      "numero": 5,
+      "id": "pack-halloween-2026",
+      "prefix": "HAL",
+      "nombre": "Pack Halloween 2026",
+      "precio": 10000,
+      "descripcion": "Especial temático para rumbas y eventos de Halloween."
+    },
+    {
+      "numero": 6,
+      "id": "combo-duo",
+      "prefix": "DUO",
+      "nombre": "Combo Dúo (2 Packs a elección)",
+      "precio": 15000,
+      "descripcion": "Elige 2 packs completos a tu gusto por $15.000 COP."
+    },
+    {
+      "numero": 7,
+      "id": "combo-trio",
+      "prefix": "TRIO",
+      "nombre": "Combo Trío (3 Packs a elección)",
+      "precio": 20000,
+      "descripcion": "Elige 3 packs completos a tu gusto por $20.000 COP."
+    },
+    {
+      "numero": 8,
+      "id": "combo-vip",
+      "prefix": "VIP",
+      "nombre": "Mega Combo VIP (Todos los Packs)",
+      "precio": 35000,
+      "descripcion": "Acceso total a todos los packs de la plataforma por $35.000 COP."
+    }
+  ],
+  "metodos_pago": {
+    "nequi": "3104531477",
+    "llave_breb": "3104531477",
+    "titular": "Jefferson Josué Silva Santafé",
+    "instrucciones": "Transfiere por Nequi o por Llave (Bre-B) al 3104531477. Envías la captura y se te entregará tu código de activación vitalicio para 2 dispositivos."
+  },
+  "links_negocio": {
+    "web_oficial": "https://bonsai-music-pool.vercel.app",
+    "tiktok": "https://www.tiktok.com/@jeffer.1997?_r=1&_t=ZS-9AKsEsdr3uG"
+  },
+  "objeciones_y_faqs": {
+    "confianza_o_estafa": "¡Te entiendo perfectamente! Es normal dudar al comprar por internet 🤝 Te doy 100% de tranquilidad:\n1️⃣ Soy DJ Bonsai, puedes ver mi trabajo diario tocando en vivo y mis videos en TikTok (@jeffer.1997) y en todas mis redes sociales.\n2️⃣ En nuestra web oficial (https://bonsai-music-pool.vercel.app) puedes escuchar las canciones completas en vivo antes de comprar para verificar la calidad 320 Kbps sin marcas.\n3️⃣ El pago es por Nequi oficial 3104531477 y la entrega del código es automática e inmediata.",
+    "es_para_dj": "¡Sirve para todos! Está pensado tanto para DJs profesionales y discotecas (con versiones Extended con intro y outro para mezclar), como para cualquier persona o negocio que quiera disfrutar la mejor música en casa, en el carro o en el gimnasio con versiones Originales limpias y en máxima calidad 320 Kbps sin sellos ni marcas. Puedes escuchar las canciones completas en vivo aquí: https://bonsai-music-pool.vercel.app",
+    "servicio_dj_presencial": "¡Claro que sí! DJ Bonsai realiza presentaciones y eventos presenciales (bodas, 15 años, discotecas y eventos privados). Cuéntame: ¿para qué fecha y en qué ciudad sería tu evento? Ya mismo le dejo una notificación prioritaria a DJ Bonsai para que te responda personalmente por este chat.",
+    "cuantos_dispositivos": "Tu código de activación es personal y es válido para máximo 2 dispositivos (por ejemplo, tu teléfono personal y tu computador). El acceso es vitalicio y de por vida, sin límite de tiempo.",
+    "como_se_descarga": "Todo se descarga directamente desde nuestra página web https://bonsai-music-pool.vercel.app en archivos ZIP limpios, bien sea por carpetas individuales o el pack completo, listo para descomprimir en tu celular o PC.",
+    "como_abro_en_computador": "¡Es muy fácil y sencillo! 💻🎧\n1️⃣ Abres WhatsApp Web en tu computador.\n2️⃣ Desde ahí tocas el enlace directo que te entregaré tras tu compra (el cual ya incluye tu auto-desbloqueo), o entras a https://bonsai-music-pool.vercel.app e ingresas tu código de activación.\n3️⃣ ¡Listo! Tu plataforma quedará 100% desbloqueada en tu computador para descargar por carpetas o el pack completo en archivos ZIP limpios."
+  },
+  "respuestas_rapidas": {
+    "saludo_e_info": "¡Hola! Mucho gusto, te habla DJ Bonsai 🎧\nEn el siguiente video que te voy a enviar te explico en menos de un minuto cómo funciona nuestra plataforma y cómo adquieres nuestros packs.\n\nEn nuestra web oficial puedes:\n🎵 Escuchar todas las canciones completas en vivo antes de comprar (calidad 320 Kbps sin marcas ni sellos).\n📂 Ver la cantidad exacta de canciones y carpetas de cada género.\n💾 Ver el peso real de cada pack (cuántos Gigas ocupa en tu disco o memoria).\n\n🌐 https://bonsai-music-pool.vercel.app\n\n🔥 NUESTROS PACKS Y COMBOS DISPONIBLES:\n1️⃣ Pack Samples & Efectos DJ: $5.000 COP / $3.00 USD\n2️⃣ Pack Decembrino 2026: $10.000 COP / $4.99 USD\n3️⃣ Pack 1000 Videos Remix: $10.000 COP / $4.99 USD\n4️⃣ Pack Crossover Originales & Extended: $10.000 COP / $4.99 USD\n5️⃣ Pack Halloween 2026: $10.000 COP / $4.99 USD\n6️⃣ Combo Dúo (2 Packs a elección): $15.000 COP / $7.99 USD\n7️⃣ Combo Trío (3 Packs a elección): $20.000 COP / $9.99 USD\n8️⃣ Mega Combo VIP (Todos los packs completos): $35.000 COP / $14.99 USD\n\n💳 CÓMO COMPRAR Y PAGAR:\n🇨🇴 En Colombia: Transfiere por Nequi o por Llave (Bre-B) al 3104531477.\n🌎 Fuera de Colombia: Paga en Dólares (USD) con tarjeta débito/crédito o PayPal en nuestra pasarela oficial de Gumroad:\n👉 https://bonsaijefferson.gumroad.com/l/hiluhk\n\nPuedes hacer tu compra directamente en nuestra web tocando el botón de tu pack, o respondernos con el número del pack que deseas adquirir.",
+    "esperando_comprobante": "¡Perfecto! 🔥 Solo falta que me envíes la foto o captura del comprobante de pago para entregarte de inmediato tu código de acceso oficial de por vida.",
+    "preguntar_cual_pack": "¡Comprobante recibido con éxito! 🎉👏\n\nPara entregarte de inmediato tu código exacto de activación, indícame cuál pack o combo compraste (puedes responder simplemente con el número):\n\n1️⃣ Pack Samples & Efectos DJ ($5.000 COP)\n2️⃣ Pack Decembrino 2026 ($10.000 COP)\n3️⃣ Pack 1000 Videos Remix ($10.000 COP)\n4️⃣ Pack Crossover Originales & Extended ($10.000 COP)\n5️⃣ Pack Halloween 2026 ($10.000 COP)\n6️⃣ Combo Dúo (2 Packs a elección) ($15.000 COP)\n7️⃣ Combo Trío (3 Packs a elección) ($20.000 COP)\n8️⃣ Mega Combo VIP (Todos los packs completos) ($35.000 COP)\n\nO ingresa a nuestra web oficial https://bonsai-music-pool.vercel.app y dale a *'Notificar Pago por WhatsApp'* en tu pack. 🎧🔥"
+  },
+  "internacional": {
+    "moneda": "USD",
+    "web_oficial": "https://bonsai-music-pool.vercel.app?pais=int",
+    "pasarela_oficial": "https://bonsaijefferson.gumroad.com/l/hiluhk",
+    "catalogo": [
+      { "numero": 1, "id": "pack-samples-efectos-dj", "prefix": "SMP", "nombre": "Pack Samples & Efectos DJ", "precio_usd": 3.00 },
+      { "numero": 2, "id": "pack-decembrino-2026", "prefix": "DEC", "nombre": "Pack Decembrino 2026", "precio_usd": 4.99 },
+      { "numero": 3, "id": "pack-1000-videos-remix", "prefix": "VID", "nombre": "Pack 1000 Videos Remix", "precio_usd": 4.99 },
+      { "numero": 4, "id": "pack-crossover-originales-extended", "prefix": "CRO", "nombre": "Pack Crossover Originales & Extended", "precio_usd": 4.99 },
+      { "numero": 5, "id": "pack-halloween-2026", "prefix": "HAL", "nombre": "Pack Halloween 2026", "precio_usd": 4.99 },
+      { "numero": 6, "id": "combo-duo", "prefix": "DUO", "nombre": "Combo Dúo (2 Packs a elección)", "precio_usd": 7.99 },
+      { "numero": 7, "id": "combo-trio", "prefix": "TRIO", "nombre": "Combo Trío (3 Packs a elección)", "precio_usd": 9.99 },
+      { "numero": 8, "id": "combo-vip", "prefix": "VIP", "nombre": "Mega Combo VIP (Todos los Packs)", "precio_usd": 14.99 }
+    ],
+    "respuestas_rapidas": {
+      "saludo_e_info": "¡Hola! Mucho gusto, te habla DJ Bonsai 🎧\nEn el siguiente video que te voy a enviar te explico en menos de un minuto cómo funciona nuestra plataforma y cómo adquieres nuestros packs.\n\nEn nuestra web oficial puedes:\n🎵 Escuchar todas las canciones en vivo antes de comprar (calidad 320 Kbps sin marcas ni sellos).\n📂 Ver la cantidad exacta de canciones y carpetas de cada género.\n💾 Ver el peso real de cada pack (cuántos Gigas ocupa en tu disco o memoria).\n\n🌐 https://bonsai-music-pool.vercel.app?pais=int\n\nNuestros Packs y Combos disponibles (en Dólares USD):\n1️⃣ Pack Samples & Efectos DJ ($3.00 USD)\n2️⃣ Pack Decembrino 2026 ($4.99 USD)\n3️⃣ Pack 1000 Videos Remix ($4.99 USD)\n4️⃣ Pack Crossover Originales & Extended ($4.99 USD)\n5️⃣ Pack Halloween 2026 ($4.99 USD)\n6️⃣ Combo Dúo (2 Packs a elección) ($7.99 USD)\n7️⃣ Combo Trío (3 Packs a elección) ($9.99 USD)\n8️⃣ Mega Combo VIP (Todos los packs completos) ($14.99 USD)\n\nPuedes hacer tu compra con tarjeta débito, crédito o PayPal en nuestra pasarela oficial de Gumroad:\n👉 https://bonsaijefferson.gumroad.com/l/hiluhk\n\nO respondernos con el número del pack que deseas adquirir.",
+      "pago_y_tarjetas": "¡Excelente decisión! 💳 Puedes pagar de forma 100% segura con tarjeta débito, crédito o PayPal a través de nuestra pasarela internacional oficial en Gumroad:\n\n👉 https://bonsaijefferson.gumroad.com/l/hiluhk\n\n🔥 MENÚ DE PACKS Y PRECIOS EN DÓLARES (USD):\n1️⃣ Pack Samples & Efectos DJ ($3.00 USD)\n2️⃣ Pack Decembrino 2026 ($4.99 USD)\n3️⃣ Pack 1000 Videos Remix ($4.99 USD)\n4️⃣ Pack Crossover Originales & Extended ($4.99 USD)\n5️⃣ Pack Halloween 2026 ($4.99 USD)\n6️⃣ Combo Dúo (2 Packs a elección) ($7.99 USD)\n7️⃣ Combo Trío (3 Packs a elección) ($9.99 USD)\n8️⃣ Mega Combo VIP (Todos los packs completos) ($14.99 USD)\n\nTambién puedes pre-escuchar y elegir en nuestra web:\n🌐 https://bonsai-music-pool.vercel.app?pais=int\n\nUna vez completada tu compra, me envías la foto del comprobante o tu número de orden de Gumroad, y de inmediato te entrego tu código de activación vitalicio para tus 2 dispositivos 🙌🎧",
+      "esperando_comprobante": "¡Perfecto! 🔥 Solo falta que me envíes la foto o captura del comprobante de compra o tu número de orden de Gumroad para entregarte de inmediato tu código de acceso oficial de por vida.",
+      "preguntar_cual_pack": "¡Comprobante recibido con éxito! 🎉👏\n\nPara entregarte de inmediato tu código exacto de activación, indícame cuál pack o combo compraste (puedes responder simplemente con el número):\n\n1️⃣ Pack Samples & Efectos DJ ($3.00 USD)\n2️⃣ Pack Decembrino 2026 ($4.99 USD)\n3️⃣ Pack 1000 Videos Remix ($4.99 USD)\n4️⃣ Pack Crossover Originales & Extended ($4.99 USD)\n5️⃣ Pack Halloween 2026 ($4.99 USD)\n6️⃣ Combo Dúo (2 Packs a elección) ($7.99 USD)\n7️⃣ Combo Trío (3 Packs a elección) ($9.99 USD)\n8️⃣ Mega Combo VIP (Todos los packs completos) ($14.99 USD)\n\nO ingresa a nuestra web oficial https://bonsai-music-pool.vercel.app?pais=int y dale a *'Notificar Pago por WhatsApp'* en tu pack. 🎧🔥"
+    }
+  }
+}
