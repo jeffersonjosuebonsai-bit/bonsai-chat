@@ -313,25 +313,76 @@ export async function connectWhatsApp(pairingPhoneNumber = null) {
           continue;
         }
 
-        // 1. DETECCIÓN DE CLIENTE INTERNACIONAL (FUERA DE COLOMBIA / PREFIJO DISTINTO A +57 O PIDE USD)
-        const isIntl = isInternationalCustomer(jid, textMessage);
+        // 1. DETECCIÓN Y PERSISTENCIA DE CLIENTE INTERNACIONAL
+        let isIntl = chatState.getIsIntl(jid);
+        if (!isIntl && isInternationalCustomer(jid, textMessage)) {
+          chatState.setIsIntl(jid, true);
+          isIntl = true;
+        }
 
-        // 1. DETECCIÓN DE MENSAJE DE COMPRA DESDE LA WEB O NÚMERO (SIN IMAGEN AÚN)
-        const detectedPack = detectPackFromText(textMessage);
         const lowerTxt = textMessage.toLowerCase();
         const trimmedTxt = lowerTxt.trim().replace('.', '');
         const isNumericChoice = ['1','2','3','4','5','6','7','8'].includes(trimmedTxt);
 
-        if (detectedPack && !isImageMsg && (isNumericChoice || lowerTxt.includes('transferir') || lowerTxt.includes('adquirir') || lowerTxt.includes('activar') || lowerTxt.includes('acceso completo') || lowerTxt.includes('promocion') || lowerTxt.includes('pack') || lowerTxt.includes('combo') || lowerTxt.includes('gumroad') || lowerTxt.includes('comprar'))) {
+        const isInfoOrGreeting = 
+          lowerTxt.includes('hola') || 
+          lowerTxt.includes('buenas') ||
+          lowerTxt.includes('info') || 
+          lowerTxt.includes('informacion') ||
+          lowerTxt.includes('de que trata') ||
+          lowerTxt.includes('mas info') ||
+          lowerTxt.includes('precio') ||
+          lowerTxt.includes('cuanto vale') ||
+          lowerTxt.includes('cuanto cuesta') ||
+          lowerTxt.includes('costo') ||
+          lowerTxt.includes('que vale') ||
+          lowerTxt.includes('anuncio') ||
+          lowerTxt.includes('publicidad') ||
+          lowerTxt.startsWith('pack especial de diciembre') ||
+          lowerTxt.includes('mas informacion');
+
+        // DETECCIÓN DE PEDIDO / COMPRA EXPLÍCITA (NUMÉRICA O EXPRESIÓN DE COMPRA CLARA)
+        const detectedPack = detectPackFromText(textMessage);
+        const isExplicitPurchaseIntent = 
+          isNumericChoice ||
+          lowerTxt.includes('quiero comprar') ||
+          lowerTxt.includes('voy a comprar') ||
+          lowerTxt.includes('quiero pagar') ||
+          lowerTxt.includes('voy a pagar') ||
+          lowerTxt.includes('donde pago') ||
+          lowerTxt.includes('como pago') ||
+          lowerTxt.includes('datos de pago') ||
+          lowerTxt.includes('donde transfiero') ||
+          lowerTxt.includes('donde consigno') ||
+          lowerTxt.includes('numero de nequi') ||
+          lowerTxt.includes('pasame el nequi') ||
+          lowerTxt.includes('dame el nequi') ||
+          lowerTxt.includes('link de pago') ||
+          lowerTxt.includes('link de gumroad') ||
+          lowerTxt.startsWith('adquirir ') ||
+          lowerTxt.startsWith('comprar ') ||
+          lowerTxt.startsWith('activar ');
+
+        if (detectedPack && !isImageMsg && !isInfoOrGreeting && isExplicitPurchaseIntent) {
           console.log(`📦 Pedido detectado para ${jid} (Internacional: ${isIntl}): ${detectedPack.name} (${detectedPack.key})`);
           chatState.setPendingPack(jid, detectedPack.key, detectedPack.name, detectedPack.subPacks || []);
           
-          let askCaptureReply = `¡Perfecto! 🔥 Solo falta que me envíes la foto o captura del comprobante de pago para entregarte de inmediato tu código de acceso oficial de por vida para el *${detectedPack.name}*.`;
+          let askCaptureReply = '';
           if (isIntl) {
-            askCaptureReply = `¡Perfecto! 🔥 Puedes completar tu compra con tarjeta débito/crédito o PayPal en nuestra pasarela oficial de Gumroad:
+            askCaptureReply = `¡Excelente elección! 🔥 Para adquirir el *${detectedPack.name}*, puedes completar tu compra con tarjeta débito, crédito o PayPal en nuestra pasarela oficial de Gumroad:
 👉 https://bonsaijefferson.gumroad.com/l/hiluhk
 
-En cuanto realices tu compra, me envías la foto del comprobante o tu número de orden de Gumroad y de inmediato te entrego tu código de acceso oficial de por vida para el *${detectedPack.name}*.`;
+Una vez realices tu compra, me envías por aquí la foto del comprobante o tu número de orden de Gumroad y de inmediato te entrego tu código de activación oficial de por vida para tus 2 dispositivos 🙌🎧`;
+          } else {
+            const priceCOP = detectedPack.key === 'SMP' ? '$5.000 COP' :
+                             detectedPack.key === 'DUO' ? '$15.000 COP' :
+                             detectedPack.key === 'TRIO' ? '$20.000 COP' :
+                             detectedPack.key === 'VIP' ? '$35.000 COP' : '$10.000 COP';
+            askCaptureReply = `¡Excelente elección! 🔥 Para el *${detectedPack.name}* (${priceCOP}), puedes transferir por Nequi o por Llave (Bre-B) al:
+📱 *3104531477*
+👤 Titular: *Jefferson Josué Silva Santafé*
+
+En cuanto realices la transferencia, me envías la foto o captura del comprobante por aquí y de inmediato te entrego tu código de activación de por vida para tus 2 dispositivos 🙌🎧`;
           }
 
           await sock.sendMessage(jid, { text: askCaptureReply });
@@ -428,13 +479,6 @@ O si compraste directamente en nuestra web, ingresa a https://bonsai-music-pool.
 
         // 4. SALUDO INICIAL + VIDEO EXPLICATIVO DE DJ BONSAI
         const history = chatState.getHistory(jid);
-        const isInfoOrGreeting = 
-          lowerTxt.includes('hola') || 
-          lowerTxt.includes('buenas') ||
-          lowerTxt.includes('info') || 
-          lowerTxt.includes('informacion') ||
-          lowerTxt.includes('de que trata') ||
-          lowerTxt.includes('mas info');
 
         if (history.length === 0 || isInfoOrGreeting) {
           const config = getBusinessConfig();
