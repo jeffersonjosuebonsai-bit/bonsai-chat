@@ -14,7 +14,7 @@ import { chatState } from '../state/chatState.js';
 import { SalesAgent } from '../ai/salesAgent.js';
 import { getBusinessConfig } from '../config.js';
 import { codeDispenser } from '../codeDispenser.js';
-import { detectPackFromText, isInternationalCustomer } from '../packDetector.js';
+import { detectPackFromText, isInternationalCustomer, extractSubPacksFromText } from '../packDetector.js';
 
 let isWhatsAppConnected = false;
 let isInitializing = false;
@@ -368,25 +368,117 @@ export async function connectWhatsApp(pairingPhoneNumber = null) {
           chatState.setPendingPack(jid, detectedPack.key, detectedPack.name, detectedPack.subPacks || []);
           
           let askCaptureReply = '';
-          if (isIntl) {
-            askCaptureReply = `¡Excelente elección! 🔥 Para adquirir el *${detectedPack.name}*, puedes completar tu compra con tarjeta débito, crédito o PayPal en nuestra pasarela oficial de Gumroad:
+          const needsToChooseSubPacks = 
+            (detectedPack.key === 'DUO' && (!detectedPack.subPacks || detectedPack.subPacks.length < 2)) ||
+            (detectedPack.key === 'TRIO' && (!detectedPack.subPacks || detectedPack.subPacks.length < 3));
+
+          if (needsToChooseSubPacks) {
+            const countStr = detectedPack.key === 'DUO' ? '2' : '3';
+            if (isIntl) {
+              const priceUSD = detectedPack.key === 'DUO' ? '$7.99 USD' : '$9.99 USD';
+              askCaptureReply = `¡Excelente elección! 🔥 Para preparar tu *${detectedPack.name}* (${priceUSD}):
+
+1️⃣ Indícame cuáles *${countStr} packs* deseas incluir en tu combo (puedes responder con los números o nombres):
+• 1️⃣ Pack Samples & Efectos DJ
+• 2️⃣ Pack Decembrino 2026
+• 3️⃣ Pack 1000 Videos Remix
+• 4️⃣ Pack Crossover Originales & Extended
+• 5️⃣ Pack Halloween 2026
+
+2️⃣ Puedes completar tu compra con tarjeta débito, crédito o PayPal en nuestra pasarela oficial de Gumroad:
+👉 https://bonsaijefferson.gumroad.com/l/hiluhk
+
+Una vez realices tu compra, me indicas tus *${countStr} packs* y me envías por aquí la foto del comprobante o número de orden para entregarte de inmediato tu código oficial vitalicio 🙌🎧`;
+            } else {
+              const priceCOP = detectedPack.key === 'DUO' ? '$15.000 COP' : '$20.000 COP';
+              askCaptureReply = `¡Excelente elección! 🔥 Para preparar tu *${detectedPack.name}* (${priceCOP}):
+
+1️⃣ Indícame cuáles *${countStr} packs* deseas incluir en tu combo (puedes responder con los números o nombres):
+• 1️⃣ Pack Samples & Efectos DJ
+• 2️⃣ Pack Decembrino 2026
+• 3️⃣ Pack 1000 Videos Remix
+• 4️⃣ Pack Crossover Originales & Extended
+• 5️⃣ Pack Halloween 2026
+
+2️⃣ Puedes transferir por Nequi o por Llave (Bre-B) al:
+📱 *3104531477*
+👤 Titular: *Jefferson Josué Silva Santafé*
+
+En cuanto transfieras, me indicas tus *${countStr} packs* y me envías la foto o captura del comprobante por aquí para entregarte de inmediato tu código con tus packs listos y desbloqueados de por vida 🙌🎧`;
+            }
+          } else {
+            if (isIntl) {
+              askCaptureReply = `¡Excelente elección! 🔥 Para adquirir el *${detectedPack.name}*, puedes completar tu compra con tarjeta débito, crédito o PayPal en nuestra pasarela oficial de Gumroad:
 👉 https://bonsaijefferson.gumroad.com/l/hiluhk
 
 Una vez realices tu compra, me envías por aquí la foto del comprobante o tu número de orden de Gumroad y de inmediato te entrego tu código de activación oficial de por vida para tus 2 dispositivos 🙌🎧`;
-          } else {
-            const priceCOP = detectedPack.key === 'SMP' ? '$5.000 COP' :
-                             detectedPack.key === 'DUO' ? '$15.000 COP' :
-                             detectedPack.key === 'TRIO' ? '$20.000 COP' :
-                             detectedPack.key === 'VIP' ? '$35.000 COP' : '$10.000 COP';
-            askCaptureReply = `¡Excelente elección! 🔥 Para el *${detectedPack.name}* (${priceCOP}), puedes transferir por Nequi o por Llave (Bre-B) al:
+            } else {
+              const priceCOP = detectedPack.key === 'SMP' ? '$5.000 COP' :
+                               detectedPack.key === 'DUO' ? '$15.000 COP' :
+                               detectedPack.key === 'TRIO' ? '$20.000 COP' :
+                               detectedPack.key === 'VIP' ? '$35.000 COP' : '$10.000 COP';
+              askCaptureReply = `¡Excelente elección! 🔥 Para el *${detectedPack.name}* (${priceCOP}), puedes transferir por Nequi o por Llave (Bre-B) al:
 📱 *3104531477*
 👤 Titular: *Jefferson Josué Silva Santafé*
 
 En cuanto realices la transferencia, me envías la foto o captura del comprobante por aquí y de inmediato te entrego tu código de activación de por vida para tus 2 dispositivos 🙌🎧`;
+            }
           }
 
           await sock.sendMessage(jid, { text: askCaptureReply });
           continue;
+        }
+
+        // 1.5 SELECCIÓN DE SUBPACKS PARA COMBO PENDIENTE (SI EL CLIENTE RESPONDE CON SUS 2 O 3 PACKS)
+        const pendingForSubs = chatState.getPendingPack(jid);
+        if (pendingForSubs && (pendingForSubs.key === 'DUO' || pendingForSubs.key === 'TRIO')) {
+          const reqCount = pendingForSubs.key === 'DUO' ? 2 : 3;
+          const currentSubs = pendingForSubs.subPacks || [];
+          if (currentSubs.length < reqCount) {
+            const newlyChosen = extractSubPacksFromText(textMessage);
+            if (newlyChosen.length >= reqCount || newlyChosen.length > currentSubs.length) {
+              const finalSubs = Array.from(new Set([...currentSubs, ...newlyChosen])).slice(0, reqCount);
+              chatState.updatePendingSubPacks(jid, finalSubs);
+              pendingForSubs.subPacks = finalSubs;
+              console.log(`📦 [chatState] Subpacks actualizados para ${jid}:`, finalSubs);
+
+              // Si el comprobante ya había sido verificado, entregar el código inmediatamente:
+              if (chatState.isPaymentVerified(jid) && finalSubs.length >= reqCount) {
+                const code = codeDispenser.getNextCode(pendingForSubs.key, jid);
+                if (code) {
+                  const intlParam = isIntl ? '&pais=int' : '';
+                  const autoUrl = `https://bonsai-music-pool.vercel.app/?c=${code}${intlParam}&p=${finalSubs.join(',')}`;
+                  const deliveryText = `¡Packs confirmados con éxito! 🎉🎧 Bienvenido a *Bonsai Music Pool*.
+
+📦 *Tu compra:* ${pendingForSubs.name}
+🔑 *Tu código de activación:* ${code}
+
+📲 *CÓMO INGRESAR Y DESCARGAR:*
+1️⃣ Toca tu enlace con auto-desbloqueo directo:
+👉 ${autoUrl}
+
+2️⃣ Tus packs elegidos ya han quedado 100% desbloqueados de por vida para ti para escuchar todo en 320 Kbps y descargar carpetas limpias en ZIP.
+
+⚠️ *CONDICIONES Y SEGURIDAD:*
+• Tu acceso es *vitalicio (de por vida)* para descargar cuando quieras.
+• Código personal válido para *máximo 2 dispositivos*.
+
+¡A disfrutar de la mejor música con la máxima calidad! 🚀🔥`;
+                  await sock.sendMessage(jid, { text: deliveryText });
+                  chatState.markPurchased(jid);
+                  chatState.clearPendingPack(jid);
+                  chatState.setPaymentVerified(jid, false);
+                  console.log(`✅ Combo ${pendingForSubs.name} entregado a ${jid} tras selección.`);
+                  continue;
+                }
+              } else if (!isImageMsg && !isPaymentKeyword) {
+                // Aún no ha pagado, confirmar que los packs quedaron guardados:
+                const confirmMsg = `¡Perfecto! 📝 Tus ${reqCount} packs elegidos han quedado registrados. En cuanto realices tu pago y me envíes la captura del comprobante por aquí, te entrego de inmediato tu enlace con tus packs listos de por vida 🙌🔥`;
+                await sock.sendMessage(jid, { text: confirmMsg });
+                continue;
+              }
+            }
+          }
         }
 
         // 2. DETECCIÓN DE COMPROBANTE DE PAGO (FOTO O PALABRA CLAVE DE PAGO)
@@ -394,7 +486,37 @@ En cuanto realices la transferencia, me envías la foto o captura del comprobant
 
         if (isImageMsg || isPaymentKeyword) {
           console.log(`📸 Comprobante recibido de ${jid}. Verificando pack...`);
-          const packToDeliver = detectedPack || chatState.getPendingPack(jid);
+          let packToDeliver = detectedPack || chatState.getPendingPack(jid);
+
+          // Si el cliente adjunta texto indicando subPacks junto a la foto
+          const extractedSub = extractSubPacksFromText(textMessage);
+          if (packToDeliver && (packToDeliver.key === 'DUO' || packToDeliver.key === 'TRIO') && extractedSub.length > 0) {
+            packToDeliver.subPacks = extractedSub;
+            chatState.updatePendingSubPacks(jid, extractedSub);
+          }
+
+          // Si compró Dúo o Trío pero AÚN no ha elegido sus packs:
+          const needsSubPacksChoice = packToDeliver && 
+            ((packToDeliver.key === 'DUO' && (!packToDeliver.subPacks || packToDeliver.subPacks.length < 2)) ||
+             (packToDeliver.key === 'TRIO' && (!packToDeliver.subPacks || packToDeliver.subPacks.length < 3)));
+
+          if (needsSubPacksChoice) {
+            chatState.setPaymentVerified(jid, true);
+            const countStr = packToDeliver.key === 'DUO' ? '2' : '3';
+            const askWhichReply = `¡Comprobante de pago recibido con éxito! 🎉👏
+
+Para entregarte de inmediato tu enlace de activación oficial con tus packs listos, por favor indícame cuáles *${countStr} packs* deseas para tu *${packToDeliver.name}*:
+
+1️⃣ Pack Samples & Efectos DJ
+2️⃣ Pack Decembrino 2026
+3️⃣ Pack 1000 Videos Remix
+4️⃣ Pack Crossover Originales & Extended
+5️⃣ Pack Halloween 2026
+
+(Respóndeme simplemente con los nombres o números, por ejemplo *"2 y 4"*, y al instante te entrego tu código de por vida 🎧🔥)`;
+            await sock.sendMessage(jid, { text: askWhichReply });
+            continue;
+          }
 
           if (packToDeliver) {
             const code = codeDispenser.getNextCode(packToDeliver.key, jid);
@@ -490,33 +612,39 @@ O si compraste directamente en nuestra web, ingresa a https://bonsai-music-pool.
           await sock.sendMessage(jid, { text: saludoMsg });
           chatState.addMessage(jid, 'assistant', saludoMsg);
 
-          // Enviar videos de DJ Bonsai (Video 1: Saludo + Video 2: Tutorial)
-          const { video1Saludo, video2Tutorial } = getMediaFiles();
-          
-          if (video1Saludo && fs.existsSync(video1Saludo)) {
-            try {
-              await new Promise(r => setTimeout(r, 1500));
-              console.log(`🎥 Enviando video 1 (saludo) a ${jid}...`);
-              await sock.sendMessage(jid, {
-                video: fs.readFileSync(video1Saludo),
-                caption: '👋 ¡Hola! Te habla DJ Bonsai en persona. Mira este video antes de empezar 🔥'
-              });
-            } catch (vErr) {
-              console.error('Error enviando video 1:', vErr.message);
+          // Enviar videos de DJ Bonsai ÚNICAMENTE UNA VEZ por chat (nunca repetir a la misma persona)
+          const videosAlreadySent = chatState.hasWelcomeVideosBeenSent(jid);
+          if (!videosAlreadySent) {
+            chatState.setWelcomeVideosSent(jid, true);
+            const { video1Saludo, video2Tutorial } = getMediaFiles();
+            
+            if (video1Saludo && fs.existsSync(video1Saludo)) {
+              try {
+                await new Promise(r => setTimeout(r, 1500));
+                console.log(`🎥 Enviando video 1 (saludo) a ${jid}...`);
+                await sock.sendMessage(jid, {
+                  video: fs.readFileSync(video1Saludo),
+                  caption: '👋 ¡Hola! Te habla DJ Bonsai en persona. Mira este video antes de empezar 🔥'
+                });
+              } catch (vErr) {
+                console.error('Error enviando video 1:', vErr.message);
+              }
             }
-          }
 
-          if (video2Tutorial && fs.existsSync(video2Tutorial)) {
-            try {
-              await new Promise(r => setTimeout(r, 2000));
-              console.log(`🎥 Enviando video 2 (tutorial) a ${jid}...`);
-              await sock.sendMessage(jid, {
-                video: fs.readFileSync(video2Tutorial),
-                caption: '📲 Tutorial: Cómo navegar en la web, escuchar canciones en vivo y descargar tus packs 🎧'
-              });
-            } catch (v2Err) {
-              console.error('Error enviando video 2:', v2Err.message);
+            if (video2Tutorial && fs.existsSync(video2Tutorial)) {
+              try {
+                await new Promise(r => setTimeout(r, 2000));
+                console.log(`🎥 Enviando video 2 (tutorial) a ${jid}...`);
+                await sock.sendMessage(jid, {
+                  video: fs.readFileSync(video2Tutorial),
+                  caption: '📲 Tutorial: Cómo navegar en la web, escuchar canciones en vivo y descargar tus packs 🎧'
+                });
+              } catch (v2Err) {
+                console.error('Error enviando video 2:', v2Err.message);
+              }
             }
+          } else {
+            console.log(`ℹ️ Omitiendo reenvío de videos a ${jid}: Ya fueron enviados previamente.`);
           }
           continue;
         }
