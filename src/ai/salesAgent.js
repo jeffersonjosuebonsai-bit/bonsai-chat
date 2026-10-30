@@ -276,7 +276,11 @@ DISTINCIÓN VITAL:
       lower.includes('metodos de pago') ||
       lower.includes('quiero pagar');
 
-    const isIntl = isInternationalCustomer(jid, userMessage);
+    let isIntl = chatState.getIsIntl ? chatState.getIsIntl(jid) : false;
+    if (!isIntl && isInternationalCustomer(jid, userMessage)) {
+      if (chatState.setIsIntl) chatState.setIsIntl(jid, true);
+      isIntl = true;
+    }
 
     if ((history.length === 0 || isInfoOrGreeting) && !isExplicitPaymentKeyword) {
       const saludoMsg = isIntl && config.internacional?.respuestas_rapidas?.saludo_e_info
