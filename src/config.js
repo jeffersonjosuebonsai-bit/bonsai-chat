@@ -1,10 +1,17 @@
 import fs from 'fs';
 import path from 'path';
+import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
 
-dotenv.config();
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const ROOT_DIR = path.resolve(__dirname, '..');
 
-const CONFIG_PATH = path.join(process.cwd(), 'config', 'default_business.json');
+dotenv.config({ path: path.join(ROOT_DIR, '.env') });
+
+const ROOT_CONFIG = path.join(ROOT_DIR, 'config', 'default_business.json');
+const CWD_CONFIG = path.join(process.cwd(), 'config', 'default_business.json');
+const CONFIG_PATH = fs.existsSync(ROOT_CONFIG) ? ROOT_CONFIG : CWD_CONFIG;
 
 export function getBusinessConfig() {
   try {
