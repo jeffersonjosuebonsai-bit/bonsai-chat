@@ -74,22 +74,52 @@ export function isInternationalCustomer(jid, text = '') {
   return false;
 }
 
+export function extractSubPacksFromText(text) {
+  if (!text) return [];
+  const t = text.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  let detectedSubPacks = [];
+
+  // 1. Detectar etiquetas específicas [Packs: pack-xxx,pack-yyy]
+  const tagMatch = text.match(/\[Packs:\s*([^\]]+)\]/i);
+  if (tagMatch) {
+    return tagMatch[1].split(',').map(s => s.trim());
+  }
+
+  // 2. Detectar nombres de packs en el texto
+  if (t.includes('sample') || t.includes('efecto')) detectedSubPacks.push('pack-samples-efectos-dj');
+  if (t.includes('decembrin') || t.includes('navidad') || t.includes('diciembre') || t.includes('parranda')) detectedSubPacks.push('pack-decembrino-2026');
+  if (t.includes('video') || t.includes('1000')) detectedSubPacks.push('pack-1000-videos-remix');
+  if (t.includes('crossover') || t.includes('extended')) detectedSubPacks.push('pack-crossover-originales-extended');
+  if (t.includes('halloween') || t.includes('hallowen')) detectedSubPacks.push('pack-halloween-2026');
+
+  // 3. Si no encontró por nombres, detectar por números individuales (1 al 5)
+  // Ejemplos: "el 2 y el 4", "1 y 3", "2, 4", "pack 2 y 5"
+  if (detectedSubPacks.length === 0) {
+    const numMap = {
+      '1': 'pack-samples-efectos-dj',
+      '2': 'pack-decembrino-2026',
+      '3': 'pack-1000-videos-remix',
+      '4': 'pack-crossover-originales-extended',
+      '5': 'pack-halloween-2026'
+    };
+    const matches = text.match(/\b([1-5])\b/g);
+    if (matches) {
+      matches.forEach(m => {
+        const id = numMap[m];
+        if (id && !detectedSubPacks.includes(id)) detectedSubPacks.push(id);
+      });
+    }
+  }
+
+  return detectedSubPacks;
+}
+
 export function detectPackFromText(text) {
   if (!text) return null;
   const t = text.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 
-  // Detectar paquetes específicos en etiquetas como: [Packs: pack-xxx,pack-yyy]
-  let detectedSubPacks = [];
-  const tagMatch = text.match(/\[Packs:\s*([^\]]+)\]/i);
-  if (tagMatch) {
-    detectedSubPacks = tagMatch[1].split(',').map(s => s.trim());
-  } else {
-    if (t.includes('sample') || t.includes('efecto')) detectedSubPacks.push('pack-samples-efectos-dj');
-    if (t.includes('decembrin') || t.includes('navidad') || t.includes('diciembre') || t.includes('parranda')) detectedSubPacks.push('pack-decembrino-2026');
-    if (t.includes('video') || t.includes('1000')) detectedSubPacks.push('pack-1000-videos-remix');
-    if (t.includes('crossover') || t.includes('extended')) detectedSubPacks.push('pack-crossover-originales-extended');
-    if (t.includes('halloween') || t.includes('hallowen')) detectedSubPacks.push('pack-halloween-2026');
-  }
+  // Detectar paquetes específicos en etiquetas o texto
+  const detectedSubPacks = extractSubPacksFromText(text);
 
   // Opciones numéricas simples según la enumeración oficial (1 a 8)
   const trimmed = t.trim().replace('.', '');
@@ -103,17 +133,17 @@ export function detectPackFromText(text) {
   if (trimmed === '8') return { key: 'VIP', name: 'Mega Combo VIP (Todos los Packs)' };
 
   // Mega Combo VIP
-  if (t.includes('mega combo vip') || t.includes('combo vip') || (t.includes('vip') && (t.includes('35') || t.includes('14.99') || t.includes('15 usd') || t.includes('todos')))) {
+  if (t.includes('mega combo vip') || t.includes('combo vip') || (t.includes('vip') && (t.includes('35') || t.includes('14.99') || t.includes('15 usd') || t.includes('todos'))) || detectedSubPacks.length >= 4) {
     return { key: 'VIP', name: 'Mega Combo VIP (Todos los Packs)' };
   }
 
   // Combo Trío
-  if (t.includes('combo trio') || (t.includes('trio') && (t.includes('20') || t.includes('9.99') || t.includes('tres')))) {
+  if (t.includes('combo trio') || (t.includes('trio') && (t.includes('20') || t.includes('9.99') || t.includes('tres'))) || detectedSubPacks.length === 3) {
     return { key: 'TRIO', name: 'Combo Trío (3 Packs a elección)', subPacks: detectedSubPacks };
   }
 
-  // Combo Dúo
-  if (t.includes('combo duo') || (t.includes('duo') && (t.includes('15') || t.includes('7.99') || t.includes('dos')))) {
+  // Combo Dúo (por mención de combo o por pedir exactamente 2 packs, ej. Crossover y Halloween)
+  if (t.includes('combo duo') || (t.includes('duo') && (t.includes('15') || t.includes('7.99') || t.includes('dos'))) || detectedSubPacks.length === 2) {
     return { key: 'DUO', name: 'Combo Dúo (2 Packs a elección)', subPacks: detectedSubPacks };
   }
 
