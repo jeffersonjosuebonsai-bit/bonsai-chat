@@ -1,10 +1,24 @@
 import fs from 'fs';
 import path from 'path';
+import { fileURLToPath } from 'url';
 
-const LOCAL_CODES_DIR = path.join(process.cwd(), 'codigos_bonsai_bot');
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const ROOT_DIR = path.resolve(__dirname, '..');
+
+// Buscar la carpeta de códigos prioritariamente en la raíz del proyecto
+const PROJECT_CODES_DIR = path.join(ROOT_DIR, 'codigos_bonsai_bot');
+const CWD_CODES_DIR = path.join(process.cwd(), 'codigos_bonsai_bot');
 const FALLBACK_CODES_DIR = path.resolve('..', 'bonsai-music-pool', 'codigos_bonsai_bot');
-const CODES_DIR = fs.existsSync(LOCAL_CODES_DIR) ? LOCAL_CODES_DIR : FALLBACK_CODES_DIR;
-const USED_CODES_FILE = path.join(process.cwd(), 'config', 'used_codes.json');
+
+let CODES_DIR = PROJECT_CODES_DIR;
+if (!fs.existsSync(CODES_DIR) && fs.existsSync(CWD_CODES_DIR)) {
+  CODES_DIR = CWD_CODES_DIR;
+} else if (!fs.existsSync(CODES_DIR) && fs.existsSync(FALLBACK_CODES_DIR)) {
+  CODES_DIR = FALLBACK_CODES_DIR;
+}
+
+const USED_CODES_FILE = path.join(ROOT_DIR, 'config', 'used_codes.json');
 
 const PACK_FILES = {
   'DEC': 'codigos_pack_decembrino.txt',
