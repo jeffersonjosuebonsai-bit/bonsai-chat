@@ -70,10 +70,32 @@ class ChatStateManager {
   }
 
   // ── Gestión de Pack Pendiente ─────────────────────────────────────────────
-  setPendingPack(jid, key, name = '', subPacks = []) {
+  setPendingPack(jid, keyOrPack, name = '', subPacks = []) {
     const state = this.getChatState(jid);
-    state.pendingPack = { key, name, subPacks, setAt: Date.now() };
-    console.log(`📦 [chatState] Pack pendiente para ${jid}: ${key} (${name})`);
+    if (typeof keyOrPack === 'object' && keyOrPack !== null) {
+      state.pendingPack = {
+        key: keyOrPack.key,
+        name: keyOrPack.name || '',
+        subPacks: Array.isArray(keyOrPack.subPacks) ? [...keyOrPack.subPacks] : [],
+        setAt: Date.now()
+      };
+    } else {
+      state.pendingPack = {
+        key: keyOrPack,
+        name,
+        subPacks: Array.isArray(subPacks) ? [...subPacks] : [],
+        setAt: Date.now()
+      };
+    }
+    console.log(`📦 [chatState] Pack pendiente para ${jid}: ${state.pendingPack.key} (${state.pendingPack.name}), subPacks:`, state.pendingPack.subPacks);
+  }
+
+  updatePendingSubPacks(jid, subPacks) {
+    const state = this.getChatState(jid);
+    if (state.pendingPack) {
+      state.pendingPack.subPacks = Array.isArray(subPacks) ? [...subPacks] : [];
+      console.log(`📦 [chatState] SubPacks actualizados para ${jid}:`, state.pendingPack.subPacks);
+    }
   }
 
   getPendingPack(jid) {
