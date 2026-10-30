@@ -17,6 +17,8 @@ class ChatStateManager {
         lastHumanIntervention: 0,
         history: [],
         isIntl: false,
+        welcomeVideosSent: false,
+        paymentVerified: false,
         // ── Remarketing tracking ───────────────────────────────────────────
         lastIncomingMessageAt: 0,  // timestamp del último mensaje del cliente
         hasPurchased: false,        // true si el bot ya entregó el pack
@@ -96,6 +98,31 @@ class ChatStateManager {
 
   getIsIntl(jid) {
     return Boolean(this.getChatState(jid).isIntl);
+  }
+
+  setWelcomeVideosSent(jid, val = true) {
+    const state = this.getChatState(jid);
+    state.welcomeVideosSent = Boolean(val);
+  }
+
+  hasWelcomeVideosBeenSent(jid) {
+    return Boolean(this.getChatState(jid).welcomeVideosSent);
+  }
+
+  setPaymentVerified(jid, verified = true) {
+    const state = this.getChatState(jid);
+    state.paymentVerified = Boolean(verified);
+  }
+
+  isPaymentVerified(jid) {
+    return Boolean(this.getChatState(jid).paymentVerified);
+  }
+
+  updatePendingSubPacks(jid, subPacks) {
+    const state = this.getChatState(jid);
+    if (state.pendingPack) {
+      state.pendingPack.subPacks = subPacks;
+    }
   }
   // ──────────────────────────────────────────────────────────────────────────
 
