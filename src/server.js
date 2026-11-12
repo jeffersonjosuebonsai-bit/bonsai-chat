@@ -303,9 +303,30 @@ app.get('/api/status', (req, res) => {
   });
 });
 
+app.get('/health', (req, res) => {
+  const status = getWhatsAppStatus ? getWhatsAppStatus() : { isConnected: false };
+  res.status(200).json({
+    ok: true,
+    whatsapp_conectado: status.isConnected,
+    uptime_sec: Math.floor(process.uptime())
+  });
+});
+
 export function startServer() {
   const server = app.listen(PORT, () => {
     console.log(`🌐 Panel de Bonsai Chat listo en http://localhost:${PORT}`);
+
+    // Auto-ping para mantener despierto el servidor en Render (cada 10 minutos)
+    const keepAliveUrl = process.env.KEEP_ALIVE_URL || process.env.RENDER_EXTERNAL_URL;
+    if (keepAliveUrl) {
+      const pingTarget = `${keepAliveUrl.replace(/\/$/, '')}/health`;
+      console.log(`💓 Keep-alive activado cada 10 min hacia: ${pingTarget}`);
+      setInterval(() => {
+        fetch(pingTarget)
+          .then(r => { if (!r.ok) console.warn(`⚠️ Keep-alive HTTP ${r.status}`); })
+          .catch(err => console.warn('⚠️ Error en keep-alive:', err.message));
+      }, 10 * 60 * 1000);
+    }
   });
   server.on('error', (err) => {
     if (err.code === 'EADDRINUSE') {
