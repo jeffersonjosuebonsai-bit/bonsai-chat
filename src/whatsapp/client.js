@@ -21,6 +21,8 @@ let isInitializing = false;
 let activeSocket = null;
 let latestQRDataUrl = null;
 let latestPairingCode = null;
+let reconnectTimer = null;
+let reconnectAttempts = 0;
 
 export function getWhatsAppStatus() {
   return {
@@ -97,6 +99,16 @@ export async function connectWhatsApp(pairingPhoneNumber = null) {
     return activeSocket;
   }
 
+  if (isInitializing && !pairingPhoneNumber) {
+    console.log('⏳ WhatsApp (Baileys) ya se está inicializando, omitiendo llamada duplicada.');
+    return activeSocket;
+  }
+
+  if (reconnectTimer) {
+    clearTimeout(reconnectTimer);
+    reconnectTimer = null;
+  }
+
   isInitializing = true;
   const authFolder = path.join(process.cwd(), 'baileys_auth');
   if (!fs.existsSync(authFolder)) {
@@ -111,65 +123,80 @@ export async function connectWhatsApp(pairingPhoneNumber = null) {
     activeSocket = null;
   }
 
-  const { state, saveCreds } = await useMultiFileAuthState(authFolder);
-  const logger = pino({ level: 'silent' });
+  try {
+    const { state, saveCreds } = await useMultiFileAuthState(authFolder);
+    const logger = pino({ level: 'silent' });
 
-  const { version } = await fetchLatestWaWebVersion({}).catch(() => ({ version: [2, 3000, 1015901307] }));
+    const { version } = await fetchLatestWaWebVersion({}).catch(() => ({ version: [2, 3000, 1015901307] }));
 
-  const sock = makeWASocket({
-    version,
-    logger,
-    printQRInTerminal: false,
-    auth: state,
-    generateHighQualityLinkPreview: true,
-    browser: Browsers.ubuntu('Chrome'),
-    markOnlineOnConnect: true,
-    syncFullHistory: false
-  });
+    const sock = makeWASocket({
+      version,
+      logger,
+      printQRInTerminal: false,
+      auth: state,
+      generateHighQualityLinkPreview: true,
+      browser: Browsers.ubuntu('Chrome'),
+      markOnlineOnConnect: true,
+      syncFullHistory: false,
+      keepAliveIntervalMs: 25000,
+      connectTimeoutMs: 60000,
+      defaultQueryTimeoutMs: 60000,
+      retryRequestDelayMs: 2000
+    });
 
-  activeSocket = sock;
+    activeSocket = sock;
 
-  sock.ev.on('creds.update', saveCreds);
+    sock.ev.on('creds.update', saveCreds);
 
-  sock.ev.on('connection.update', async (update) => {
-    const { connection, lastDisconnect, qr } = update;
+    sock.ev.on('connection.update', async (update) => {
+      const { connection, lastDisconnect, qr } = update;
 
-    if (qr) {
-      isWhatsAppConnected = false;
-      console.log('\n======================================================');
-      console.log('📱 ESCANEA ESTE CÓDIGO QR CON TU WHATSAPP BUSINESS:');
-      console.log('======================================================\n');
-      qrcodeTerminal.generate(qr, { small: true });
+      if (qr) {
+        isWhatsAppConnected = false;
+        isInitializing = false;
+        console.log('\n======================================================');
+        console.log('📱 ESCANEA ESTE CÓDIGO QR CON TU WHATSAPP BUSINESS:');
+        console.log('======================================================\n');
+        qrcodeTerminal.generate(qr, { small: true });
 
-      try {
-        latestQRDataUrl = await QRCode.toDataURL(qr);
-        console.log('🖼️ Código QR listo en la página web: http://localhost:3000');
-      } catch (err) {}
-    }
-
-    if (connection === 'open') {
-      isWhatsAppConnected = true;
-      isInitializing = false;
-      latestQRDataUrl = null;
-      latestPairingCode = null;
-      console.log('\n🟢 ¡BONSAI CHAT (BAILEYS) CONECTADO EXITOSAMENTE A WHATSAPP!');
-      console.log('🎧 Asistente DJ Bonsai listo para responder y vender packs de música en vivo.\n');
-    } else if (connection === 'close') {
-      isWhatsAppConnected = false;
-      isInitializing = false;
-      const statusCode = lastDisconnect?.error?.output?.statusCode;
-      console.log(`🔴 WhatsApp (Baileys) desconectado. Razón: ${statusCode || 'desconocida'}`);
-
-      if (statusCode === DisconnectReason.loggedOut) {
-        console.log('🧹 Sesión desvinculada por el teléfono. Limpiando credenciales...');
-        resetWhatsAppSession();
-      } else {
-        setTimeout(() => {
-          connectWhatsApp().catch(e => console.error('Error al reconectar Baileys:', e.message));
-        }, 3000);
+        try {
+          latestQRDataUrl = await QRCode.toDataURL(qr);
+          console.log('🖼️ Código QR listo en la página web: http://localhost:3000');
+        } catch (err) {}
       }
-    }
-  });
+
+      if (connection === 'open') {
+        isWhatsAppConnected = true;
+        isInitializing = false;
+        reconnectAttempts = 0;
+        latestQRDataUrl = null;
+        latestPairingCode = null;
+        console.log('\n🟢 ¡BONSAI CHAT (BAILEYS) CONECTADO EXITOSAMENTE A WHATSAPP!');
+        console.log('🎧 Asistente DJ Bonsai listo para responder y vender packs de música en vivo.\n');
+      } else if (connection === 'close') {
+        isWhatsAppConnected = false;
+        isInitializing = false;
+        const statusCode = lastDisconnect?.error?.output?.statusCode;
+        console.log(`🔴 WhatsApp (Baileys) desconectado. Razón: ${statusCode || 'desconocida'}`);
+
+        if (statusCode === DisconnectReason.loggedOut) {
+          console.log('🧹 Sesión desvinculada por el teléfono. Limpiando credenciales...');
+          reconnectAttempts = 0;
+          resetWhatsAppSession();
+        } else {
+          // Backoff exponencial: 3s, 6s, 12s, 24s, máx 60s (15s mínimo si fue connectionReplaced 440)
+          reconnectAttempts += 1;
+          const baseDelay = statusCode === DisconnectReason.connectionReplaced ? 15000 : 3000;
+          const delayMs = Math.min(baseDelay * Math.pow(2, reconnectAttempts - 1), 60000);
+          console.log(`🔄 Reintentando conexión en ${Math.round(delayMs / 1000)}s (intento #${reconnectAttempts})...`);
+          if (reconnectTimer) clearTimeout(reconnectTimer);
+          reconnectTimer = setTimeout(() => {
+            reconnectTimer = null;
+            connectWhatsApp().catch(e => console.error('Error al reconectar Baileys:', e.message));
+          }, delayMs);
+        }
+      }
+    });
 
   const processedMsgIds = new Set();
 
@@ -206,10 +233,10 @@ export async function connectWhatsApp(pairingPhoneNumber = null) {
 
         if (!jid || jid.includes('@g.us') || jid.includes('status@broadcast')) continue;
 
-        // Omitir mensajes viejos de sincronización histórica al conectar
+        // Omitir mensajes viejos de sincronización histórica al conectar (> 10 min)
         const nowSec = Math.floor(Date.now() / 1000);
         const msgSec = msg.messageTimestamp ? Number(msg.messageTimestamp) : 0;
-        if (msgSec > 0 && (nowSec - msgSec) > 120) {
+        if (msgSec > 0 && (nowSec - msgSec) > 600) {
           console.log(`⏰ Omitiendo mensaje antiguo de ${jid} (${nowSec - msgSec}s atrás)`);
           continue;
         }
@@ -714,6 +741,10 @@ O si compraste directamente en nuestra web, ingresa a https://bonsai-music-pool.
   }
 
   return sock;
+  } catch (err) {
+    isInitializing = false;
+    throw err;
+  }
 }
 
 export async function requestWhatsAppPairingCode(phoneNumber) {
